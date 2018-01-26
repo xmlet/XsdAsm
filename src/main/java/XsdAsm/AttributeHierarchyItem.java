@@ -11,7 +11,7 @@ public class AttributeHierarchyItem {
     private List<XsdAttribute> ownElements;
 
 
-    public AttributeHierarchyItem(String className, List<String> parentName, List<XsdAttribute> ownElements){
+    AttributeHierarchyItem(String className, List<String> parentName, List<XsdAttribute> ownElements){
         this.className = className;
         this.parentName = parentName;
         this.ownElements = ownElements;
@@ -21,11 +21,11 @@ public class AttributeHierarchyItem {
         return className;
     }
 
-    public List<String> getParentsName() {
+    List<String> getParentsName() {
         return parentName;
     }
 
-    public List<XsdAttribute> getOwnElements() {
+    List<XsdAttribute> getOwnElements() {
         return ownElements;
     }
 }

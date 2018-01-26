@@ -1,4 +1,3 @@
-import XsdAsm.XsdAsm;
 import XsdAsm.XsdAsmUtils;
 import org.junit.Test;
 
@@ -7,19 +6,9 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-import XsdParser.XsdParser;
-
-public class XsdAsmTest {
+public class XsdAsmBasicTests {
 
     private static String apiName = "TestObjects";
-
-    static{
-        XsdParser xsdParser = new XsdParser();
-        XsdAsm classGenerator = new XsdAsm();
-
-        classGenerator.generateClassFromElements(
-                xsdParser.parse(XsdAsmTest.class.getClassLoader().getResource("html_5.xsd").getPath()), apiName);
-    }
 
     @Test
     public void testGeneratedClassesIntegrity() throws Exception {
@@ -43,6 +32,7 @@ public class XsdAsmTest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testSelf() throws Exception {
         File generatedObjectsFolder = new File(XsdAsmUtils.getDestinationDirectory(apiName));
@@ -66,7 +56,7 @@ public class XsdAsmTest {
 
         Object varInstance2 = var.newInstance();
 
-        Object returningVar = addVarMethodWithId.invoke(varInstance2, "varContent", "varId");
+        addVarMethodWithId.invoke(varInstance2, "varContent", "varId");
 
         //Assert.assertEquals(varInstance2, returningVar);
         //Assert.assertEquals("varId", varInstance2.childs.get(0).id());
@@ -92,3 +82,5 @@ public class XsdAsmTest {
         return XsdAsmUtils.getPackage(apiName).replaceAll("/", ".");
     }
 }
+
+
