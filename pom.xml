@@ -3,7 +3,7 @@
 
     <groupId>com.github.xmlet</groupId>
     <artifactId>xsdAsm</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.2-SNAPSHOT</version>
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
@@ -16,7 +16,7 @@
 
     <build>
         <plugins>
-            <plugin>
+            <!--plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.6.0</version>
@@ -36,7 +36,7 @@
                         <argument>TestObjects</argument>
                     </arguments>
                 </configuration>
-            </plugin>
+            </plugin-->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
