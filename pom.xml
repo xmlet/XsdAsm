@@ -3,7 +3,7 @@
 
     <groupId>com.github.xmlet</groupId>
     <artifactId>xsdAsm</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.2-SNAPSHOT</version>
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
@@ -11,7 +11,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
 
     <build>
