@@ -148,7 +148,7 @@ class XsdAsmEnum {
     }
 
     static String getEnumName(XsdAttribute attribute) {
-        return ENUM_PREFIX + attribute.getName().replaceAll("[^a-zA-Z0-9]", "_");
+        return ENUM_PREFIX + attribute.getName();
     }
 
 }

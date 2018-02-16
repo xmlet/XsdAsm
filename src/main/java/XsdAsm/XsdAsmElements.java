@@ -23,17 +23,14 @@ class XsdAsmElements {
     static void generateClassFromElement(XsdAsmInterfaces interfaceGenerator, List<String> createdAttributes, XsdElement element, String apiName) {
         String className = toCamelCase(element.getName());
 
-        Stream<XsdElement> elementChildren = getOwnChildren(element);
         Stream<XsdAttribute> elementAttributes = getOwnAttributes(element);
-        String[] interfaces = interfaceGenerator.getInterfaces(element);
+        String[] interfaces = interfaceGenerator.getInterfaces(element, apiName);
 
         String signature = getClassSignature(interfaces, className, apiName);
 
         ClassWriter classWriter = generateClass(className, ABSTRACT_ELEMENT_TYPE, interfaces, signature,ACC_PUBLIC + ACC_SUPER, apiName);
 
-        generateClassSpecificMethods(classWriter, className, apiName);
-
-        elementChildren.forEach(child -> generateMethodsForElement(classWriter, child, getFullClassTypeName(className, apiName), getFullClassTypeNameDesc(className, apiName), apiName));
+        generateClassSpecificMethods(classWriter, className, apiName, null);
 
         elementAttributes.forEach(elementAttribute -> generateMethodsAndCreateAttribute(createdAttributes, classWriter, elementAttribute, getFullClassTypeNameDesc(className, apiName), apiName));
 
@@ -47,44 +44,62 @@ class XsdAsmElements {
      * An implementation of the self method, which should return this.
      * @param classWriter The class writer on which should be written the methods.
      * @param className The class name.
+     * @param defaultName The defaultName for this element.
      */
-    private static void generateClassSpecificMethods(ClassWriter classWriter, String className, String apiName) {
+    static void generateClassSpecificMethods(ClassWriter classWriter, String className, String apiName, String defaultName) {
         String classType = getFullClassTypeName(className, apiName);
         String classTypeDesc = getFullClassTypeNameDesc(className, apiName);
+        String name;
+
+        if (defaultName != null){
+            name = defaultName;
+        } else {
+            name = firstToLower(className);
+        }
 
         MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC, CONSTRUCTOR, "()V", null, null);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitMethodInsn(INVOKESPECIAL, ABSTRACT_ELEMENT_TYPE, CONSTRUCTOR, "()V", false);
+        mVisitor.visitLdcInsn(name);
+        mVisitor.visitMethodInsn(INVOKESPECIAL, ABSTRACT_ELEMENT_TYPE, CONSTRUCTOR, "(Ljava/lang/String;)V", false);
         mVisitor.visitInsn(RETURN);
-        mVisitor.visitMaxs(1, 1);
+        mVisitor.visitMaxs(2, 1);
         mVisitor.visitEnd();
 
-        mVisitor = classWriter.visitMethod(ACC_PUBLIC, CONSTRUCTOR, "(" + IELEMENT_TYPE_DESC + ")V", null, null);
+        mVisitor = classWriter.visitMethod(ACC_PUBLIC, CONSTRUCTOR, "(" + IELEMENT_TYPE_DESC + ")V", "(TP;)V", null);
         mVisitor.visitLocalVariable("parent", IELEMENT_TYPE_DESC, null, new Label(), new Label(),1);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitVarInsn(ALOAD, 1);
-        mVisitor.visitMethodInsn(INVOKESPECIAL, ABSTRACT_ELEMENT_TYPE, CONSTRUCTOR, "(" + IELEMENT_TYPE_DESC + ")V", false);
+        mVisitor.visitLdcInsn(name);
+        mVisitor.visitMethodInsn(INVOKESPECIAL, ABSTRACT_ELEMENT_TYPE, CONSTRUCTOR, "(" + IELEMENT_TYPE_DESC + "Ljava/lang/String;)V", false);
         mVisitor.visitInsn(RETURN);
-        mVisitor.visitMaxs(2, 2);
+        mVisitor.visitMaxs(3, 2);
         mVisitor.visitEnd();
 
-        mVisitor = classWriter.visitMethod(ACC_PUBLIC, CONSTRUCTOR, "(" + IELEMENT_TYPE_DESC + JAVA_STRING_DESC + ")V", null, null);
+        mVisitor = classWriter.visitMethod(ACC_PUBLIC, "<init>", "(" + IELEMENT_TYPE_DESC + "Ljava/lang/String;)V", "(TP;Ljava/lang/String;)V", null);
         mVisitor.visitLocalVariable("parent", IELEMENT_TYPE_DESC, null, new Label(), new Label(),1);
-        mVisitor.visitLocalVariable("id", JAVA_STRING_DESC, null, new Label(), new Label(),2);
+        mVisitor.visitLocalVariable("name", "Ljava/lang/String;", null, new Label(), new Label(),2);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitVarInsn(ALOAD, 1);
         mVisitor.visitVarInsn(ALOAD, 2);
-        mVisitor.visitMethodInsn(INVOKESPECIAL, ABSTRACT_ELEMENT_TYPE, CONSTRUCTOR, "(" + IELEMENT_TYPE_DESC + JAVA_STRING_DESC + ")V", false);
+        mVisitor.visitMethodInsn(INVOKESPECIAL, ABSTRACT_ELEMENT_TYPE, "<init>", "(" + IELEMENT_TYPE_DESC + "Ljava/lang/String;)V", false);
         mVisitor.visitInsn(RETURN);
         mVisitor.visitMaxs(3, 3);
         mVisitor.visitEnd();
 
-        mVisitor = classWriter.visitMethod(ACC_PUBLIC, "self", "()" + classTypeDesc, null, null);
+        mVisitor = classWriter.visitMethod(ACC_PUBLIC, "self", "()" + classTypeDesc, "()L" + classType + "<TP;>;", null);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 0);
+        mVisitor.visitInsn(ARETURN);
+        mVisitor.visitMaxs(1, 1);
+        mVisitor.visitEnd();
+
+        mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_BRIDGE + ACC_SYNTHETIC, "self", "()" + IELEMENT_TYPE_DESC, null, null);
+        mVisitor.visitCode();
+        mVisitor.visitVarInsn(ALOAD, 0);
+        mVisitor.visitMethodInsn(INVOKEVIRTUAL, classType, "self", "()" + classTypeDesc, false);
         mVisitor.visitInsn(ARETURN);
         mVisitor.visitMaxs(1, 1);
         mVisitor.visitEnd();
@@ -116,14 +131,6 @@ class XsdAsmElements {
         mVisitor.visitMaxs(2, 2);
         mVisitor.visitEnd();
 
-        mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_BRIDGE + ACC_SYNTHETIC, "self", "()" + IELEMENT_TYPE_DESC, null, null);
-        mVisitor.visitCode();
-        mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitMethodInsn(INVOKEVIRTUAL, classType, "self", "()" + classTypeDesc, false);
-        mVisitor.visitInsn(ARETURN);
-        mVisitor.visitMaxs(1, 1);
-        mVisitor.visitEnd();
-
         mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_BRIDGE + ACC_SYNTHETIC, "cloneElem", "()" + IELEMENT_TYPE_DESC, null, null);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 0);
@@ -132,7 +139,7 @@ class XsdAsmElements {
         mVisitor.visitMaxs(1, 1);
         mVisitor.visitEnd();
 
-        mVisitor = classWriter.visitMethod(ACC_PUBLIC, "cloneElem", "()" + classTypeDesc, null, null);
+        mVisitor = classWriter.visitMethod(ACC_PUBLIC, "cloneElem", "()" + classTypeDesc, "()L" + classType + "<TP;>;", null);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitTypeInsn(NEW, classType);
@@ -157,49 +164,27 @@ class XsdAsmElements {
         String childTypeDesc = getFullClassTypeNameDesc(childCamelName, apiName);
         boolean isInterface = isInterfaceMethod(returnType);
 
-        MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC, child.getName(), "()" + childTypeDesc, null, null);
+        MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC, child.getName(), "()" + childTypeDesc, "()L" + childType + "<TT;>;", null);
         mVisitor.visitCode();
         mVisitor.visitTypeInsn(NEW, childType);
         mVisitor.visitInsn(DUP);
         mVisitor.visitVarInsn(ALOAD, 0);
+        mVisitor.visitMethodInsn(INVOKEINTERFACE, classType, "self", "()" + IELEMENT_TYPE_DESC, true);
         mVisitor.visitMethodInsn(INVOKESPECIAL, childType, CONSTRUCTOR, "(" + IELEMENT_TYPE_DESC + ")V", false);
         mVisitor.visitVarInsn(ASTORE, 1);
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitVarInsn(ALOAD, 1);
 
         if (isInterface){
-            mVisitor.visitMethodInsn(INVOKEINTERFACE, classType, "addChild", "(" + IELEMENT_TYPE_DESC + ")V", true);
+            mVisitor.visitMethodInsn(INVOKEINTERFACE, classType, "addChild", "(" + IELEMENT_TYPE_DESC + ")" + IELEMENT_TYPE_DESC, true);
         } else {
-            mVisitor.visitMethodInsn(INVOKEVIRTUAL, classType, "addChild", "(" + IELEMENT_TYPE_DESC + ")V", false);
+            mVisitor.visitMethodInsn(INVOKEVIRTUAL, classType, "addChild", "(" + IELEMENT_TYPE_DESC + ")" + IELEMENT_TYPE_DESC, false);
         }
 
+        mVisitor.visitInsn(POP);
         mVisitor.visitVarInsn(ALOAD, 1);
         mVisitor.visitInsn(ARETURN);
         mVisitor.visitMaxs(3, 2);
-        mVisitor.visitEnd();
-
-
-        mVisitor = classWriter.visitMethod(ACC_PUBLIC, child.getName(), "(" + JAVA_STRING_DESC + ")" + childTypeDesc, null, null);
-        mVisitor.visitLocalVariable("id", JAVA_STRING_DESC, null, new Label(), new Label(),1);
-        mVisitor.visitCode();
-        mVisitor.visitTypeInsn(NEW, childType);
-        mVisitor.visitInsn(DUP);
-        mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitVarInsn(ALOAD, 1);
-        mVisitor.visitMethodInsn(INVOKESPECIAL, childType, CONSTRUCTOR, "(" + IELEMENT_TYPE_DESC + JAVA_STRING_DESC + ")V", false);
-        mVisitor.visitVarInsn(ASTORE, 2);
-        mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitVarInsn(ALOAD, 2);
-
-        if (isInterface){
-            mVisitor.visitMethodInsn(INVOKEINTERFACE, classType, "addChild", "(" + IELEMENT_TYPE_DESC + ")V", true);
-        } else {
-            mVisitor.visitMethodInsn(INVOKEVIRTUAL, classType, "addChild", "(" + IELEMENT_TYPE_DESC + ")V", false);
-        }
-
-        mVisitor.visitVarInsn(ALOAD, 2);
-        mVisitor.visitInsn(ARETURN);
-        mVisitor.visitMaxs(4, 3);
         mVisitor.visitEnd();
     }
 }

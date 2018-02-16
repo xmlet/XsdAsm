@@ -4,21 +4,14 @@ import XsdElements.XsdAttribute;
 
 import java.util.List;
 
-public class AttributeHierarchyItem {
+class AttributeHierarchyItem {
 
-    private String className;
     private List<String> parentName;
     private List<XsdAttribute> ownElements;
 
-
-    AttributeHierarchyItem(String className, List<String> parentName, List<XsdAttribute> ownElements){
-        this.className = className;
+    AttributeHierarchyItem(List<String> parentName, List<XsdAttribute> ownElements){
         this.parentName = parentName;
         this.ownElements = ownElements;
-    }
-
-    public String getClassName() {
-        return className;
     }
 
     List<String> getParentsName() {
