@@ -20,6 +20,6 @@
     <orderEntry type="library" name="Maven: org.ow2.asm:asm-util:6.0" level="project" />
     <orderEntry type="library" name="Maven: org.ow2.asm:asm-xml:6.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.1" level="project" />
-    <orderEntry type="library" name="Maven: com.github.xmlet:xsdParser:1.0.2-snapshot" level="project" />
+    <orderEntry type="library" name="Maven: com.github.xmlet:xsdParser:1.0.4-snapshot" level="project" />
   </component>
 </module>

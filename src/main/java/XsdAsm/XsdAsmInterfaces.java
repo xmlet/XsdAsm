@@ -521,7 +521,7 @@ class XsdAsmInterfaces {
         mVisitor.visitTypeInsn(NEW, nextType);
         mVisitor.visitInsn(DUP);
         mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "$", "()" + IELEMENT_TYPE_DESC, true);
+        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "º", "()" + IELEMENT_TYPE_DESC, true);
         mVisitor.visitMethodInsn(INVOKESPECIAL, nextType, CONSTRUCTOR, "(" + IELEMENT_TYPE_DESC + ")V", false);
         mVisitor.visitVarInsn(ASTORE, 2);
         mVisitor.visitVarInsn(ALOAD, 0);
@@ -544,17 +544,17 @@ class XsdAsmInterfaces {
         mVisitor.visitInsn(POP);
 
         mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "$", "()" + IELEMENT_TYPE_DESC, true);
+        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "º", "()" + IELEMENT_TYPE_DESC, true);
         Label l0 = new Label();
         mVisitor.visitJumpInsn(IFNULL, l0);
         mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "$", "()" + IELEMENT_TYPE_DESC, true);
+        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "º", "()" + IELEMENT_TYPE_DESC, true);
         mVisitor.visitMethodInsn(INVOKEINTERFACE, IELEMENT_TYPE, "getChildren", "()Ljava/util/List;", true);
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "remove", "(Ljava/lang/Object;)Z", true);
         mVisitor.visitInsn(POP);
         mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "$", "()" + IELEMENT_TYPE_DESC, true);
+        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "º", "()" + IELEMENT_TYPE_DESC, true);
         mVisitor.visitVarInsn(ALOAD, 2);
         mVisitor.visitMethodInsn(INVOKEINTERFACE, IELEMENT_TYPE, "addChild", "(" + IELEMENT_TYPE_DESC + ")" + IELEMENT_TYPE_DESC, true);
         mVisitor.visitInsn(POP);

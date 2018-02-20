@@ -47,11 +47,7 @@ class XsdAsmVisitors {
     private static void addVisitorInterfaceMethod(ClassWriter classWriter, String elementName, String signature, String apiName){
         String elementTypeDesc = getFullClassTypeNameDesc(toCamelCase(elementName), apiName);
 
-        MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, "initVisit", "(" + elementTypeDesc + ")V", signature, null);
-        mVisitor.visitLocalVariable(elementName, elementTypeDesc, signature, new Label(), new Label(),1);
-        mVisitor.visitEnd();
-
-        mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, "endVisit", "(" + elementTypeDesc + ")V", signature, null);
+        MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, "visit", "(" + elementTypeDesc + ")V", signature, null);
         mVisitor.visitLocalVariable(elementName, elementTypeDesc, signature, new Label(), new Label(),1);
         mVisitor.visitEnd();
     }
@@ -72,12 +68,8 @@ class XsdAsmVisitors {
         mVisitor.visitMaxs(1, 1);
         mVisitor.visitEnd();
 
-        mVisitor = classWriter.visitMethod(ACC_ABSTRACT + ACC_PUBLIC, "initVisit", "(" + IELEMENT_TYPE_DESC + ")V", "<T::" + IELEMENT_TYPE_DESC + ">(L" + IELEMENT_TYPE + "<TT;*>;)V", null);
+        mVisitor = classWriter.visitMethod(ACC_ABSTRACT + ACC_PUBLIC, "visit", "(" + IELEMENT_TYPE_DESC + ")V", "<T::" + IELEMENT_TYPE_DESC + ">(L" + IELEMENT_TYPE + "<TT;*>;)V", null);
         mVisitor.visitLocalVariable("elem", IELEMENT_TYPE_DESC, "L" + IELEMENT_TYPE + "<TT;*>;", new Label(), new Label(),1);
-        mVisitor.visitEnd();
-
-        mVisitor = classWriter.visitMethod(ACC_ABSTRACT + ACC_PUBLIC, "endVisit", "(" + IELEMENT_TYPE_DESC + ")V", "<T::" + IELEMENT_TYPE_DESC + ">(L" + IELEMENT_TYPE + "<TT;*>;)V", null);
-        mVisitor.visitLocalVariable("elem", IELEMENT_TYPE_DESC, IELEMENT_TYPE + "<TT;*>", new Label(), new Label(),1);
         mVisitor.visitEnd();
 
         elementNames.forEach(elementName -> addAbstractVisitorMethod(classWriter, elementName, null, apiName));
@@ -97,22 +89,12 @@ class XsdAsmVisitors {
     private static void addAbstractVisitorMethod(ClassWriter classWriter, String elementName, String signature, String apiName){
         String elementTypeDesc = getFullClassTypeNameDesc(toCamelCase(elementName), apiName);
 
-        MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC, "initVisit", "(" + elementTypeDesc + ")V", signature, null);
+        MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC, "visit", "(" + elementTypeDesc + ")V", signature, null);
         mVisitor.visitLocalVariable(elementName, elementTypeDesc, null, new Label(), new Label(),1);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitVarInsn(ALOAD, 1);
-        mVisitor.visitMethodInsn(INVOKEVIRTUAL, ABSTRACT_VISITOR_TYPE, "initVisit", "(" + IELEMENT_TYPE_DESC + ")V", false);
-        mVisitor.visitInsn(RETURN);
-        mVisitor.visitMaxs(2, 2);
-        mVisitor.visitEnd();
-
-        mVisitor = classWriter.visitMethod(ACC_PUBLIC, "endVisit", "(" + elementTypeDesc + ")V", signature, null);
-        mVisitor.visitLocalVariable(elementName, elementTypeDesc, null, new Label(), new Label(),1);
-        mVisitor.visitCode();
-        mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitVarInsn(ALOAD, 1);
-        mVisitor.visitMethodInsn(INVOKEVIRTUAL, ABSTRACT_VISITOR_TYPE, "endVisit", "(" + IELEMENT_TYPE_DESC + ")V", false);
+        mVisitor.visitMethodInsn(INVOKEVIRTUAL, ABSTRACT_VISITOR_TYPE, "visit", "(" + IELEMENT_TYPE_DESC + ")V", false);
         mVisitor.visitInsn(RETURN);
         mVisitor.visitMaxs(2, 2);
         mVisitor.visitEnd();
