@@ -29,7 +29,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>XsdAsmMain</mainClass>
+                    <mainClass>org.xmlet.xsdasm.main.XsdAsmMain</mainClass>
                     <arguments>
                         <argument>${project.basedir}\src\main\resources\test.xsd</argument>
                         <argument>TestObjects</argument>
@@ -225,7 +225,7 @@
         <dependency>
             <groupId>com.github.xmlet</groupId>
             <artifactId>xsdParser</artifactId>
-            <version>1.0.3</version>
+            <version>1.0.4</version>
         </dependency>
     </dependencies>
 

@@ -1,15 +1,17 @@
-package XsdAsm;
+package org.xmlet.xsdasm.classes;
 
-import XsdElements.XsdAttribute;
-import XsdElements.XsdElement;
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.xmlet.xsdparser.xsdelements.XsdAttribute;
+import org.xmlet.xsdparser.xsdelements.XsdElement;
 
 import java.util.List;
 import java.util.stream.Stream;
 
-import static XsdAsm.XsdAsmUtils.*;
-import static XsdAsm.XsdSupportingStructure.*;
 import static org.objectweb.asm.Opcodes.*;
+import static org.xmlet.xsdasm.classes.XsdAsmUtils.*;
+import static org.xmlet.xsdasm.classes.XsdSupportingStructure.*;
 
 class XsdAsmElements {
 
@@ -66,25 +68,25 @@ class XsdAsmElements {
         mVisitor.visitMaxs(2, 1);
         mVisitor.visitEnd();
 
-        mVisitor = classWriter.visitMethod(ACC_PUBLIC, CONSTRUCTOR, "(" + IELEMENT_TYPE_DESC + ")V", "(TP;)V", null);
-        mVisitor.visitLocalVariable("parent", IELEMENT_TYPE_DESC, null, new Label(), new Label(),1);
+        mVisitor = classWriter.visitMethod(ACC_PUBLIC, CONSTRUCTOR, "(" + ELEMENT_TYPE_DESC + ")V", "(TP;)V", null);
+        mVisitor.visitLocalVariable("parent", ELEMENT_TYPE_DESC, null, new Label(), new Label(),1);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitVarInsn(ALOAD, 1);
         mVisitor.visitLdcInsn(name);
-        mVisitor.visitMethodInsn(INVOKESPECIAL, ABSTRACT_ELEMENT_TYPE, CONSTRUCTOR, "(" + IELEMENT_TYPE_DESC + "Ljava/lang/String;)V", false);
+        mVisitor.visitMethodInsn(INVOKESPECIAL, ABSTRACT_ELEMENT_TYPE, CONSTRUCTOR, "(" + ELEMENT_TYPE_DESC + "Ljava/lang/String;)V", false);
         mVisitor.visitInsn(RETURN);
         mVisitor.visitMaxs(3, 2);
         mVisitor.visitEnd();
 
-        mVisitor = classWriter.visitMethod(ACC_PUBLIC, "<init>", "(" + IELEMENT_TYPE_DESC + "Ljava/lang/String;)V", "(TP;Ljava/lang/String;)V", null);
-        mVisitor.visitLocalVariable("parent", IELEMENT_TYPE_DESC, null, new Label(), new Label(),1);
+        mVisitor = classWriter.visitMethod(ACC_PUBLIC, "<init>", "(" + ELEMENT_TYPE_DESC + "Ljava/lang/String;)V", "(TP;Ljava/lang/String;)V", null);
+        mVisitor.visitLocalVariable("parent", ELEMENT_TYPE_DESC, null, new Label(), new Label(),1);
         mVisitor.visitLocalVariable("name", "Ljava/lang/String;", null, new Label(), new Label(),2);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitVarInsn(ALOAD, 1);
         mVisitor.visitVarInsn(ALOAD, 2);
-        mVisitor.visitMethodInsn(INVOKESPECIAL, ABSTRACT_ELEMENT_TYPE, "<init>", "(" + IELEMENT_TYPE_DESC + "Ljava/lang/String;)V", false);
+        mVisitor.visitMethodInsn(INVOKESPECIAL, ABSTRACT_ELEMENT_TYPE, "<init>", "(" + ELEMENT_TYPE_DESC + "Ljava/lang/String;)V", false);
         mVisitor.visitInsn(RETURN);
         mVisitor.visitMaxs(3, 3);
         mVisitor.visitEnd();
@@ -96,7 +98,7 @@ class XsdAsmElements {
         mVisitor.visitMaxs(1, 1);
         mVisitor.visitEnd();
 
-        mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_BRIDGE + ACC_SYNTHETIC, "self", "()" + IELEMENT_TYPE_DESC, null, null);
+        mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_BRIDGE + ACC_SYNTHETIC, "self", "()" + ELEMENT_TYPE_DESC, null, null);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitMethodInsn(INVOKEVIRTUAL, classType, "self", "()" + classTypeDesc, false);
@@ -104,26 +106,26 @@ class XsdAsmElements {
         mVisitor.visitMaxs(1, 1);
         mVisitor.visitEnd();
 
-        mVisitor = classWriter.visitMethod(ACC_PUBLIC, "accept", "(" + VISITOR_TYPE_DESC + ")V", null, null);
-        mVisitor.visitLocalVariable("visitor", VISITOR_TYPE_DESC, null, new Label(), new Label(),1);
+        mVisitor = classWriter.visitMethod(ACC_PUBLIC, "accept", "(" + ELEMENT_VISITOR_TYPE_DESC + ")V", null, null);
+        mVisitor.visitLocalVariable("visitor", ELEMENT_VISITOR_TYPE_DESC, null, new Label(), new Label(),1);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 1);
         mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitMethodInsn(INVOKEINTERFACE, VISITOR_TYPE, "visit", "(" + classTypeDesc + ")V", true);
+        mVisitor.visitMethodInsn(INVOKEINTERFACE, ELEMENT_VISITOR_TYPE, "visit", "(" + classTypeDesc + ")V", true);
         mVisitor.visitInsn(RETURN);
         mVisitor.visitMaxs(2, 2);
         mVisitor.visitEnd();
 
-        mVisitor = classWriter.visitMethod(ACC_PRIVATE + ACC_STATIC + ACC_SYNTHETIC, "lambda$accept$0", "(" + VISITOR_TYPE_DESC + IELEMENT_TYPE_DESC + ")V", null, null);
+        mVisitor = classWriter.visitMethod(ACC_PRIVATE + ACC_STATIC + ACC_SYNTHETIC, "lambda$accept$0", "(" + ELEMENT_VISITOR_TYPE_DESC + ELEMENT_TYPE_DESC + ")V", null, null);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 1);
         mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitMethodInsn(INVOKEINTERFACE, IELEMENT_TYPE, "accept", "(" + VISITOR_TYPE_DESC + ")V", true);
+        mVisitor.visitMethodInsn(INVOKEINTERFACE, ELEMENT_TYPE, "accept", "(" + ELEMENT_VISITOR_TYPE_DESC + ")V", true);
         mVisitor.visitInsn(RETURN);
         mVisitor.visitMaxs(2, 2);
         mVisitor.visitEnd();
 
-        mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_BRIDGE + ACC_SYNTHETIC, "cloneElem", "()" + IELEMENT_TYPE_DESC, null, null);
+        mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_BRIDGE + ACC_SYNTHETIC, "cloneElem", "()" + ELEMENT_TYPE_DESC, null, null);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitMethodInsn(INVOKEVIRTUAL, classType, "cloneElem", "()" + classTypeDesc, false);
@@ -161,16 +163,16 @@ class XsdAsmElements {
         mVisitor.visitTypeInsn(NEW, childType);
         mVisitor.visitInsn(DUP);
         mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitMethodInsn(INVOKEINTERFACE, classType, "self", "()" + IELEMENT_TYPE_DESC, true);
-        mVisitor.visitMethodInsn(INVOKESPECIAL, childType, CONSTRUCTOR, "(" + IELEMENT_TYPE_DESC + ")V", false);
+        mVisitor.visitMethodInsn(INVOKEINTERFACE, classType, "self", "()" + ELEMENT_TYPE_DESC, true);
+        mVisitor.visitMethodInsn(INVOKESPECIAL, childType, CONSTRUCTOR, "(" + ELEMENT_TYPE_DESC + ")V", false);
         mVisitor.visitVarInsn(ASTORE, 1);
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitVarInsn(ALOAD, 1);
 
         if (isInterface){
-            mVisitor.visitMethodInsn(INVOKEINTERFACE, classType, "addChild", "(" + IELEMENT_TYPE_DESC + ")" + IELEMENT_TYPE_DESC, true);
+            mVisitor.visitMethodInsn(INVOKEINTERFACE, classType, "addChild", "(" + ELEMENT_TYPE_DESC + ")" + ELEMENT_TYPE_DESC, true);
         } else {
-            mVisitor.visitMethodInsn(INVOKEVIRTUAL, classType, "addChild", "(" + IELEMENT_TYPE_DESC + ")" + IELEMENT_TYPE_DESC, false);
+            mVisitor.visitMethodInsn(INVOKEVIRTUAL, classType, "addChild", "(" + ELEMENT_TYPE_DESC + ")" + ELEMENT_TYPE_DESC, false);
         }
 
         mVisitor.visitInsn(POP);

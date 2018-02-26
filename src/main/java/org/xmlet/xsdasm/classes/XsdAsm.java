@@ -1,16 +1,16 @@
-package XsdAsm;
+package org.xmlet.xsdasm.classes;
 
-import XsdElements.XsdAbstractElement;
-import XsdElements.XsdElement;
+import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
+import org.xmlet.xsdparser.xsdelements.XsdElement;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static XsdAsm.XsdAsmUtils.createGeneratedFilesDirectory;
-import static XsdAsm.XsdAsmVisitors.generateVisitors;
-import static XsdAsm.XsdSupportingStructure.createSupportingInfrastructure;
+import static org.xmlet.xsdasm.classes.XsdAsmUtils.createGeneratedFilesDirectory;
+import static org.xmlet.xsdasm.classes.XsdAsmVisitors.generateVisitors;
+import static org.xmlet.xsdasm.classes.XsdSupportingStructure.createSupportingInfrastructure;
 
 public class XsdAsm {
 

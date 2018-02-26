@@ -1,5 +1,5 @@
-import XsdAsm.XsdAsmUtils;
 import org.junit.Test;
+import org.xmlet.xsdasm.classes.XsdAsmUtils;
 
 import java.io.File;
 import java.lang.reflect.Method;

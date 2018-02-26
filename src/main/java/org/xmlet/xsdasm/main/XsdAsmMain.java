@@ -1,5 +1,7 @@
-import XsdAsm.XsdAsm;
-import XsdParser.XsdParser;
+package org.xmlet.xsdasm.main;
+
+import org.xmlet.xsdasm.classes.XsdAsm;
+import org.xmlet.xsdparser.core.XsdParser;
 
 public class XsdAsmMain {
 

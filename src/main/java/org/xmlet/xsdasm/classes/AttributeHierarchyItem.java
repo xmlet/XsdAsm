@@ -1,6 +1,6 @@
-package XsdAsm;
+package org.xmlet.xsdasm.classes;
 
-import XsdElements.XsdAttribute;
+import org.xmlet.xsdparser.xsdelements.XsdAttribute;
 
 import java.util.List;
 

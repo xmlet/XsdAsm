@@ -1,19 +1,19 @@
-package XsdAsm;
+package org.xmlet.xsdasm.classes;
 
-import XsdElements.XsdAttribute;
-import XsdElements.XsdRestriction;
-import XsdElements.XsdRestrictionElements.XsdEnumeration;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
+import org.xmlet.xsdparser.xsdelements.XsdAttribute;
+import org.xmlet.xsdparser.xsdelements.XsdRestriction;
+import org.xmlet.xsdparser.xsdelements.xsdrestrictions.XsdEnumeration;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-import static XsdAsm.XsdAsmUtils.*;
-import static XsdAsm.XsdSupportingStructure.*;
 import static org.objectweb.asm.Opcodes.*;
+import static org.xmlet.xsdasm.classes.XsdAsmUtils.*;
+import static org.xmlet.xsdasm.classes.XsdSupportingStructure.*;
 
 class XsdAsmEnum {
 

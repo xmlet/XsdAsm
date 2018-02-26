@@ -1,18 +1,18 @@
-package XsdAsm;
+package org.xmlet.xsdasm.classes;
 
-import XsdElements.*;
 import javafx.util.Pair;
 import org.apache.commons.lang3.ArrayUtils;
 import org.objectweb.asm.*;
+import org.xmlet.xsdparser.xsdelements.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static XsdAsm.XsdAsmElements.generateMethodsForElement;
-import static XsdAsm.XsdAsmUtils.*;
-import static XsdAsm.XsdSupportingStructure.*;
 import static org.objectweb.asm.Opcodes.*;
+import static org.xmlet.xsdasm.classes.XsdAsmElements.generateMethodsForElement;
+import static org.xmlet.xsdasm.classes.XsdAsmUtils.*;
+import static org.xmlet.xsdasm.classes.XsdSupportingStructure.*;
 
 class XsdAsmInterfaces {
 
@@ -56,7 +56,7 @@ class XsdAsmInterfaces {
         }
 
         if (interfaces == null || interfaces.length == 0){
-            return new String[]{ITEXT};
+            return new String[]{TEXT_GROUP};
         }
 
         return interfaces;
@@ -82,7 +82,7 @@ class XsdAsmInterfaces {
                 elementAttribute.setName(elementAttribute.getName() + ATTRIBUTE_CASE_SENSITIVE_DIFERENCE);
             }
 
-            generateMethodsAndCreateAttribute(createdAttributes, interfaceWriter, elementAttribute, IELEMENT_TYPE_DESC, apiName);
+            generateMethodsAndCreateAttribute(createdAttributes, interfaceWriter, elementAttribute, ELEMENT_TYPE_DESC, apiName);
         });
 
         writeClassToFile(baseClassNameCamelCase, interfaceWriter, apiName);
@@ -151,13 +151,13 @@ class XsdAsmInterfaces {
 
         if (attributeGroups.size() == 1){
             List<String> interfaces = new ArrayList<>();
-            interfaces.add(getInterfaceName(toCamelCase(attributeGroups.get(0).getName())));
+            interfaces.add(toCamelCase(attributeGroups.get(0).getName()));
             return interfaces;
         }
 
         if (parents.size() == 0){
             return attributeGroups.stream()
-                    .map(baseClass -> getInterfaceName(toCamelCase(baseClass.getName())))
+                    .map(baseClass -> toCamelCase(baseClass.getName()))
                     .collect(Collectors.toList());
         }
 
@@ -169,7 +169,7 @@ class XsdAsmInterfaces {
      * @param attributeGroup The attributeGroup to add.
      */
     private void addAttributeGroup(XsdAttributeGroup attributeGroup) {
-        String interfaceName = getInterfaceName(attributeGroup.getName());
+        String interfaceName = toCamelCase(attributeGroup.getName());
 
         if (!attributeGroupInterfaces.containsKey(interfaceName)){
             List<XsdAttribute> ownElements = attributeGroup.getXsdElements()
@@ -192,9 +192,9 @@ class XsdAsmInterfaces {
         StringBuilder signature;
 
         if (interfaces.length == 0){
-            signature = new StringBuilder("<T::L" + IELEMENT_TYPE + "<TT;TP;>;P::" + IELEMENT_TYPE_DESC + ">" + JAVA_OBJECT_DESC + "L" + IELEMENT_TYPE + "<TT;TP;>;");
+            signature = new StringBuilder("<T::L" + ELEMENT_TYPE + "<TT;TP;>;P::" + ELEMENT_TYPE_DESC + ">" + JAVA_OBJECT_DESC + "L" + ELEMENT_TYPE + "<TT;TP;>;");
         } else {
-            signature = new StringBuilder("<T::L" + IELEMENT_TYPE + "<TT;TP;>;P::" + IELEMENT_TYPE_DESC + ">" + JAVA_OBJECT_DESC);
+            signature = new StringBuilder("<T::L" + ELEMENT_TYPE + "<TT;TP;>;P::" + ELEMENT_TYPE_DESC + ">" + JAVA_OBJECT_DESC);
 
             for (String anInterface : interfaces) {
                 signature.append("L").append(getFullClassTypeName(anInterface, apiName)).append("<TT;TP;>;");
@@ -214,11 +214,11 @@ class XsdAsmInterfaces {
         String[] interfaces;
 
         if (parentsName.size() == 0){
-            interfaces = new String[]{IELEMENT};
+            interfaces = new String[]{ELEMENT};
         } else {
             interfaces = new String[parentsName.size()];
 
-            parentsName.stream().map(parentName -> getInterfaceName(toCamelCase(parentName))).collect(Collectors.toList()).toArray(interfaces);
+            parentsName.stream().map(parentName -> toCamelCase(parentName)).collect(Collectors.toList()).toArray(interfaces);
         }
 
         return interfaces;
@@ -266,11 +266,11 @@ class XsdAsmInterfaces {
      */
     private Pair<String, Integer> groupMethod(String groupName, XsdChoice choiceElement, XsdAll allElement, XsdSequence sequenceElement, String className, int interfaceIndex, String apiName){
         List<String> extendedInterfaces = new ArrayList<>();
-        String interfaceName = getInterfaceName(className + "Group" + interfaceIndex);
+        String interfaceName = className + "Group" + interfaceIndex;
         String[] extendedInterfacesArr;
 
         if (groupName != null){
-            interfaceName = getInterfaceName(toCamelCase(groupName));
+            interfaceName = toCamelCase(groupName);
         }
 
         if (allElement != null) {
@@ -295,7 +295,7 @@ class XsdAsmInterfaces {
         }
 
         if (extendedInterfaces.isEmpty()){
-            extendedInterfacesArr = new String[]{ITEXT};
+            extendedInterfacesArr = new String[]{TEXT_GROUP};
         } else {
             extendedInterfacesArr = new String[extendedInterfaces.size()];
             extendedInterfaces.toArray(extendedInterfacesArr);
@@ -318,10 +318,10 @@ class XsdAsmInterfaces {
      * @return A pair with the key being the name of the created sequence interface and the current interface index after the creation of the interface and its dependant interfaces.
      */
     private Pair<String, Integer> sequenceMethod(Stream<XsdAbstractElement> xsdElements, String className, int interfaceIndex, String apiName, String groupName) {
-        String interfaceNameBase = getInterfaceName(className + "Sequence");
+        String interfaceNameBase = className + "Sequence";
 
         if (groupName != null){
-            interfaceNameBase = getInterfaceName(toCamelCase(groupName + "Sequence"));
+            interfaceNameBase = toCamelCase(groupName + "Sequence");
         }
 
         String interfaceName = interfaceNameBase + interfaceIndex;
@@ -339,7 +339,7 @@ class XsdAsmInterfaces {
             String sequenceName = sequenceNames.get(i);
 
             String currentInterfaceName = interfaceNameBase + interfaceIndex;
-            String[] interfaces = new String[] {ITEXT};
+            String[] interfaces = new String[] {TEXT_GROUP};
 
             boolean isLast = i == sequenceList.size() - 1;
 
@@ -467,7 +467,7 @@ class XsdAsmInterfaces {
             nextTypeInterfaces = new String[]{ interfaceNameBase + (interfaceIndex + 1)};
         } else {
             if (groupName != null){
-                nextTypeInterfaces = new String[] {getInterfaceName(toCamelCase(groupName))};
+                nextTypeInterfaces = new String[] {toCamelCase(groupName)};
             } else {
                 nextTypeInterfaces = null;
             }
@@ -521,8 +521,8 @@ class XsdAsmInterfaces {
         mVisitor.visitTypeInsn(NEW, nextType);
         mVisitor.visitInsn(DUP);
         mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "º", "()" + IELEMENT_TYPE_DESC, true);
-        mVisitor.visitMethodInsn(INVOKESPECIAL, nextType, CONSTRUCTOR, "(" + IELEMENT_TYPE_DESC + ")V", false);
+        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "º", "()" + ELEMENT_TYPE_DESC, true);
+        mVisitor.visitMethodInsn(INVOKESPECIAL, nextType, CONSTRUCTOR, "(" + ELEMENT_TYPE_DESC + ")V", false);
         mVisitor.visitVarInsn(ASTORE, 2);
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "getChildren", "()Ljava/util/List;", true);
@@ -530,33 +530,33 @@ class XsdAsmInterfaces {
         mVisitor.visitInsn(DUP);
         mVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass", "()Ljava/lang/Class;", false);
         mVisitor.visitInsn(POP);
-        mVisitor.visitInvokeDynamicInsn("accept", "(" + nextTypeDesc + ")Ljava/util/function/Consumer;", new Handle(Opcodes.H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory", "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;", false), Type.getType("(Ljava/lang/Object;)V"), new Handle(Opcodes.H_INVOKEVIRTUAL, ABSTRACT_ELEMENT_TYPE, "addChild", "(" + IELEMENT_TYPE_DESC + ")" + IELEMENT_TYPE_DESC, false), Type.getType("(" + IELEMENT_TYPE_DESC + ")V"));
+        mVisitor.visitInvokeDynamicInsn("accept", "(" + nextTypeDesc + ")Ljava/util/function/Consumer;", new Handle(Opcodes.H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory", "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;", false), Type.getType("(Ljava/lang/Object;)V"), new Handle(Opcodes.H_INVOKEVIRTUAL, ABSTRACT_ELEMENT_TYPE, "addChild", "(" + ELEMENT_TYPE_DESC + ")" + ELEMENT_TYPE_DESC, false), Type.getType("(" + ELEMENT_TYPE_DESC + ")V"));
         mVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "forEach", "(Ljava/util/function/Consumer;)V", true);
         mVisitor.visitVarInsn(ALOAD, 2);
         mVisitor.visitTypeInsn(NEW, addingType);
         mVisitor.visitInsn(DUP);
         mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "self", "()" + IELEMENT_TYPE_DESC, true);
-        mVisitor.visitMethodInsn(INVOKESPECIAL, addingType, "<init>", "(" + IELEMENT_TYPE_DESC + ")V", false);
+        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "self", "()" + ELEMENT_TYPE_DESC, true);
+        mVisitor.visitMethodInsn(INVOKESPECIAL, addingType, "<init>", "(" + ELEMENT_TYPE_DESC + ")V", false);
         mVisitor.visitVarInsn(ALOAD, 1);
-        mVisitor.visitMethodInsn(INVOKEVIRTUAL, addingType, "text", "(Ljava/lang/String;)" + IELEMENT_TYPE_DESC, false);
-        mVisitor.visitMethodInsn(INVOKEVIRTUAL, nextType, "addChild", "(" + IELEMENT_TYPE_DESC + ")" + IELEMENT_TYPE_DESC, false);
+        mVisitor.visitMethodInsn(INVOKEVIRTUAL, addingType, "text", "(Ljava/lang/String;)" + ELEMENT_TYPE_DESC, false);
+        mVisitor.visitMethodInsn(INVOKEVIRTUAL, nextType, "addChild", "(" + ELEMENT_TYPE_DESC + ")" + ELEMENT_TYPE_DESC, false);
         mVisitor.visitInsn(POP);
 
         mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "º", "()" + IELEMENT_TYPE_DESC, true);
+        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "º", "()" + ELEMENT_TYPE_DESC, true);
         Label l0 = new Label();
         mVisitor.visitJumpInsn(IFNULL, l0);
         mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "º", "()" + IELEMENT_TYPE_DESC, true);
-        mVisitor.visitMethodInsn(INVOKEINTERFACE, IELEMENT_TYPE, "getChildren", "()Ljava/util/List;", true);
+        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "º", "()" + ELEMENT_TYPE_DESC, true);
+        mVisitor.visitMethodInsn(INVOKEINTERFACE, ELEMENT_TYPE, "getChildren", "()Ljava/util/List;", true);
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "remove", "(Ljava/lang/Object;)Z", true);
         mVisitor.visitInsn(POP);
         mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "º", "()" + IELEMENT_TYPE_DESC, true);
+        mVisitor.visitMethodInsn(INVOKEINTERFACE, interfaceType, "º", "()" + ELEMENT_TYPE_DESC, true);
         mVisitor.visitVarInsn(ALOAD, 2);
-        mVisitor.visitMethodInsn(INVOKEINTERFACE, IELEMENT_TYPE, "addChild", "(" + IELEMENT_TYPE_DESC + ")" + IELEMENT_TYPE_DESC, true);
+        mVisitor.visitMethodInsn(INVOKEINTERFACE, ELEMENT_TYPE, "addChild", "(" + ELEMENT_TYPE_DESC + ")" + ELEMENT_TYPE_DESC, true);
         mVisitor.visitInsn(POP);
         mVisitor.visitLabel(l0);
         mVisitor.visitFrame(Opcodes.F_APPEND,1, new Object[] {nextType}, 0, null);
@@ -628,21 +628,21 @@ class XsdAsmInterfaces {
         String interfaceName;
 
         if (groupName != null){
-            interfaceName = getInterfaceName(toCamelCase(groupName + "All" + interfaceIndex));
+            interfaceName = toCamelCase(groupName + "All" + interfaceIndex);
         } else {
-            interfaceName = getInterfaceName(className + "All" + interfaceIndex);
+            interfaceName = className + "All" + interfaceIndex;
         }
 
         if (createdInterfaces.contains(interfaceName)){
             return new Pair<>(interfaceName, interfaceIndex);
         }
 
-        String[] extendedInterfacesArr = new String[]{ITEXT};
+        String[] extendedInterfacesArr = new String[]{TEXT_GROUP};
 
         ClassWriter classWriter = generateClass(interfaceName, JAVA_OBJECT, extendedInterfacesArr, getInterfaceSignature(extendedInterfacesArr, apiName), ACC_PUBLIC + ACC_ABSTRACT + ACC_INTERFACE, apiName);
 
         directElements.forEach(child -> {
-            generateMethodsForElement(classWriter, child, getFullClassTypeName(interfaceName, apiName), IELEMENT_TYPE_DESC, apiName);
+            generateMethodsForElement(classWriter, child, getFullClassTypeName(interfaceName, apiName), ELEMENT_TYPE_DESC, apiName);
             createElement(child, apiName);
         });
 
@@ -665,16 +665,16 @@ class XsdAsmInterfaces {
         String interfaceName;
 
         if (groupName != null){
-            interfaceName = getInterfaceName(toCamelCase(groupName + "Choice" + interfaceIndex));
+            interfaceName = toCamelCase(groupName + "Choice" + interfaceIndex);
         } else {
-            interfaceName = getInterfaceName(className + "Choice" + interfaceIndex);
+            interfaceName = className + "Choice" + interfaceIndex;
         }
 
         if (createdInterfaces.contains(interfaceName)){
             return new Pair<>(interfaceName, interfaceIndex);
         }
 
-        String[] extendedInterfacesArr = new String[]{ITEXT};
+        String[] extendedInterfacesArr = new String[]{TEXT_GROUP};
         List<String> extendedInterfaces = new ArrayList<>();
 
         for (XsdGroup groupElement : groupElements) {
@@ -692,7 +692,7 @@ class XsdAsmInterfaces {
         ClassWriter classWriter = generateClass(interfaceName, JAVA_OBJECT, extendedInterfacesArr, getInterfaceSignature(extendedInterfacesArr, apiName), ACC_PUBLIC + ACC_ABSTRACT + ACC_INTERFACE, apiName);
 
         directElements.forEach(child -> {
-            XsdAsmElements.generateMethodsForElement(classWriter, child, getFullClassTypeName(interfaceName, apiName), IELEMENT_TYPE_DESC, apiName);
+            XsdAsmElements.generateMethodsForElement(classWriter, child, getFullClassTypeName(interfaceName, apiName), ELEMENT_TYPE_DESC, apiName);
             createElement(child, apiName);
         });
 
@@ -769,9 +769,9 @@ class XsdAsmInterfaces {
     }
 
     /**
-     * Iterates in a given XsdAbstractElement object in order to obtain all the contained XsdElements.
+     * Iterates in a given XsdAbstractElement object in order to obtain all the contained xsdelements.
      * @param element The element to iterate on.
-     * @return All the XsdElements contained in the element.
+     * @return All the xsdelements contained in the element.
      */
     private List<XsdElement> getAllElementsRecursively(XsdAbstractElement element) {
         List<XsdElement> allGroupElements = new ArrayList<>();

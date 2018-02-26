@@ -1,8 +1,11 @@
-package XsdAsm;
+package org.xmlet.xsdasm.classes;
 
-import XsdElements.*;
-import XsdElements.XsdRestrictionElements.*;
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassWriter;
+import org.xmlet.xsdparser.xsdelements.XsdAttribute;
+import org.xmlet.xsdparser.xsdelements.XsdComplexType;
+import org.xmlet.xsdparser.xsdelements.XsdElement;
+import org.xmlet.xsdparser.xsdelements.XsdRestriction;
+import org.xmlet.xsdparser.xsdelements.xsdrestrictions.XsdEnumeration;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -10,18 +13,17 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
-import static XsdAsm.XsdAsmAttributes.*;
-import static XsdAsm.XsdSupportingStructure.*;
-import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.V1_8;
+import static org.xmlet.xsdasm.classes.XsdAsmAttributes.generateAttribute;
+import static org.xmlet.xsdasm.classes.XsdAsmAttributes.generateMethodsForAttribute;
+import static org.xmlet.xsdasm.classes.XsdSupportingStructure.*;
 
 public class XsdAsmUtils {
 
     @SuppressWarnings("FieldCanBeLocal")
-    private static String PACKAGE_BASE = "XsdToJavaAPI/";
-    private static final String INTERFACE_PREFIX = "I";
+    private static String PACKAGE_BASE = "org/xmlet/";
     private static final HashMap<String, String> xsdFullTypesToJava;
 
     static {
@@ -111,14 +113,6 @@ public class XsdAsmUtils {
         xsdFullTypesToJava.put("xs:ENTITY","Ljava/lang/String;");
         xsdFullTypesToJava.put("xsd:untypedAtomic","Ljava/lang/String;");
         xsdFullTypesToJava.put("xs:untypedAtomic","Ljava/lang/String;");
-    }
-
-    /**
-     * @param groupName A group/interface name.
-     * @return An interface-like name, e.g. flowContent -> IFlowContent
-     */
-    static String getInterfaceName(String groupName) {
-        return INTERFACE_PREFIX + toCamelCase(groupName);
     }
 
     static String toCamelCase(String name){
@@ -218,7 +212,7 @@ public class XsdAsmUtils {
      * @return True if the method belongs to an interface and false if it belongs to a concrete class.
      */
     static boolean isInterfaceMethod(String returnType) {
-        return returnType.equals(IELEMENT_TYPE_DESC);
+        return returnType.equals(ELEMENT_TYPE_DESC);
     }
 
     static String getFullJavaType(String itemType) {
@@ -298,7 +292,7 @@ public class XsdAsmUtils {
      * @return The signature of the class.
      */
     static String getClassSignature(String[] interfaces, String className, String apiName) {
-        StringBuilder signature = new StringBuilder("<P::" + IELEMENT_TYPE_DESC + ">L" + ABSTRACT_ELEMENT_TYPE + "<L" + getFullClassTypeName(className, apiName) + "<TP;>;TP;>;");
+        StringBuilder signature = new StringBuilder("<P::" + ELEMENT_TYPE_DESC + ">L" + ABSTRACT_ELEMENT_TYPE + "<L" + getFullClassTypeName(className, apiName) + "<TP;>;TP;>;");
 
         if (interfaces != null){
             for (String anInterface : interfaces) {
@@ -320,7 +314,7 @@ public class XsdAsmUtils {
      * @return The interface signature.
      */
     static String getInterfaceSignature(String[] interfaces, String apiName) {
-        StringBuilder signature = new StringBuilder("<T::L" + IELEMENT_TYPE + "<TT;TP;>;P::" + IELEMENT_TYPE_DESC + ">Ljava/lang/Object;");
+        StringBuilder signature = new StringBuilder("<T::L" + ELEMENT_TYPE + "<TT;TP;>;P::" + ELEMENT_TYPE_DESC + ">Ljava/lang/Object;");
 
         if (interfaces != null){
             for (String anInterface : interfaces) {
@@ -331,23 +325,6 @@ public class XsdAsmUtils {
         }
 
         return signature.toString();
-    }
-
-    /**
-     * Generates a default constructor.
-     * @param classWriter The class writer from the class where the constructors will be added.
-     * @param constructorType The modifiers for the constructor.
-     */
-    static void generateConstructor(ClassWriter classWriter, String baseClass, int constructorType) {
-        MethodVisitor defaultConstructor = classWriter.visitMethod(constructorType, CONSTRUCTOR, "()V",null,null);
-
-        defaultConstructor.visitCode();
-        defaultConstructor.visitVarInsn(ALOAD, 0);
-        defaultConstructor.visitMethodInsn(INVOKESPECIAL, baseClass, CONSTRUCTOR, "()V", false);
-        defaultConstructor.visitInsn(RETURN);
-        defaultConstructor.visitMaxs(1, 1);
-
-        defaultConstructor.visitEnd();
     }
 
     /**
