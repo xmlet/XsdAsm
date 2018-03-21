@@ -1,36 +1,34 @@
 package org.xmlet.xsdasm.classes;
 
 import org.objectweb.asm.ClassWriter;
-import org.xmlet.xsdparser.xsdelements.XsdAttribute;
-import org.xmlet.xsdparser.xsdelements.XsdComplexType;
-import org.xmlet.xsdparser.xsdelements.XsdElement;
-import org.xmlet.xsdparser.xsdelements.XsdRestriction;
+import org.xmlet.xsdparser.xsdelements.*;
 import org.xmlet.xsdparser.xsdelements.xsdrestrictions.XsdEnumeration;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.stream.Stream;
 
+import static org.objectweb.asm.Opcodes.V9;
 import static org.objectweb.asm.Opcodes.V1_8;
-import static org.xmlet.xsdasm.classes.XsdAsmAttributes.generateAttribute;
 import static org.xmlet.xsdasm.classes.XsdAsmAttributes.generateMethodsForAttribute;
 import static org.xmlet.xsdasm.classes.XsdSupportingStructure.*;
 
 public class XsdAsmUtils {
 
-    @SuppressWarnings("FieldCanBeLocal")
-    private static String PACKAGE_BASE = "org/xmlet/";
     private static final HashMap<String, String> xsdFullTypesToJava;
 
     static {
         xsdFullTypesToJava = new HashMap<>();
 
-        xsdFullTypesToJava.put("xsd:anyURI","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xs:anyURI","Ljava/lang/String;");
+        xsdFullTypesToJava.put("xsd:anyURI",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xs:anyURI",JAVA_STRING_DESC);
         xsdFullTypesToJava.put("xsd:boolean","Ljava/lang/Boolean;");
         xsdFullTypesToJava.put("xs:boolean","Ljava/lang/Boolean;");
         xsdFullTypesToJava.put("xsd:date","Ljavax/xml/datatype/XMLGregorianCalendar;");
@@ -91,29 +89,31 @@ public class XsdAsmUtils {
         xsdFullTypesToJava.put("xs:QName","Ljavax/xml/namespace/QName;");
         xsdFullTypesToJava.put("xsd:NOTATION","Ljavax/xml/namespace/QName;");
         xsdFullTypesToJava.put("xs:NOTATION","Ljavax/xml/namespace/QName;");
-        xsdFullTypesToJava.put("xsd:string","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xs:string","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xsd:normalizedString","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xs:normalizedString","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xsd:token","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xs:token","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xsd:language","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xs:language","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xsd:NMTOKEN","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xs:NMTOKEN","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xsd:Name","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xs:Name","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xsd:NCName","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xs:NCName","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xsd:ID","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xs:ID","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xsd:IDREF","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xs:IDREF","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xsd:ENTITY","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xs:ENTITY","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xsd:untypedAtomic","Ljava/lang/String;");
-        xsdFullTypesToJava.put("xs:untypedAtomic","Ljava/lang/String;");
+        xsdFullTypesToJava.put("xsd:string",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xs:string",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xsd:normalizedString",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xs:normalizedString",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xsd:token",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xs:token",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xsd:language",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xs:language",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xsd:NMTOKEN",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xs:NMTOKEN",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xsd:Name",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xs:Name",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xsd:NCName",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xs:NCName",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xsd:ID",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xs:ID",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xsd:IDREF",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xs:IDREF",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xsd:ENTITY",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xs:ENTITY",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xsd:untypedAtomic",JAVA_STRING_DESC);
+        xsdFullTypesToJava.put("xs:untypedAtomic",JAVA_STRING_DESC);
     }
+
+    private XsdAsmUtils(){}
 
     static String toCamelCase(String name){
         if (name.length() == 1){
@@ -134,7 +134,7 @@ public class XsdAsmUtils {
     }
 
     public static String getPackage(String apiName){
-        return PACKAGE_BASE + apiName + "/";
+        return "org/xmlet/" + apiName + "/";
     }
 
     /**
@@ -145,7 +145,7 @@ public class XsdAsmUtils {
         URL resource = XsdAsm.class.getClassLoader().getResource("");
 
         if (resource != null){
-            return resource.getPath() + "/" + getPackage(apiName);
+            return resource.getPath() /*+ "/" */ + getPackage(apiName);
         }
 
         throw new RuntimeException("Target folder not found.");
@@ -197,12 +197,10 @@ public class XsdAsmUtils {
 
         byte[] constructedClass = classWriter.toByteArray();
 
-        try {
-            FileOutputStream os = new FileOutputStream(new File(getFinalPathPart(className, apiName)));
+        try (FileOutputStream os = new FileOutputStream(new File(getFinalPathPart(className, apiName)))){
             os.write(constructedClass);
-            os.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            XsdLogger.getLogger().log(Level.SEVERE, "Failure writing to file.", e);
         }
     }
 
@@ -212,7 +210,7 @@ public class XsdAsmUtils {
      * @return True if the method belongs to an interface and false if it belongs to a concrete class.
      */
     static boolean isInterfaceMethod(String returnType) {
-        return returnType.equals(ELEMENT_TYPE_DESC);
+        return returnType.equals(elementTypeDesc);
     }
 
     static String getFullJavaType(String itemType) {
@@ -229,7 +227,7 @@ public class XsdAsmUtils {
         String javaType = xsdFullTypesToJava.getOrDefault(attribute.getType(), null);
 
         if (javaType == null){
-            if (restrictions.size() != 0){
+            if (!restrictions.isEmpty()){
                 return xsdFullTypesToJava.getOrDefault(restrictions.get(0).getBase(), JAVA_OBJECT_DESC);
             }
 
@@ -258,13 +256,21 @@ public class XsdAsmUtils {
      * @param elementAttribute The attribute element.
      * @param apiName The api this class will belong.
      */
-    static void generateMethodsAndCreateAttribute(List<String> createdAttributes, ClassWriter classWriter, XsdAttribute elementAttribute, String returnType, String apiName) {
+    static void generateMethodsAndCreateAttribute(Map<String, List<XsdAttribute>> createdAttributes, ClassWriter classWriter, XsdAttribute elementAttribute, String returnType, String apiName) {
         generateMethodsForAttribute(classWriter, elementAttribute, returnType, apiName);
 
-        if (!createdAttributes.contains(elementAttribute.getName())){
-            generateAttribute(elementAttribute, apiName);
+        if (!createdAttributes.containsKey(elementAttribute.getName())){
+            List<XsdAttribute> attributes = new ArrayList<>();
 
-            createdAttributes.add(elementAttribute.getName());
+            attributes.add(elementAttribute);
+
+            createdAttributes.put(elementAttribute.getName(), attributes);
+        } else {
+            List<XsdAttribute> attributes = createdAttributes.get(elementAttribute.getName());
+
+            if (!attributes.contains(elementAttribute)){
+                attributes.add(elementAttribute);
+            }
         }
     }
 
@@ -277,8 +283,27 @@ public class XsdAsmUtils {
         XsdComplexType complexType = element.getXsdComplexType();
 
         if (complexType != null) {
-            return complexType.getXsdAttributes()
+            Stream<XsdAttribute> extensionAttributes = null;
+            Stream<XsdAttribute> complexTypeAttributes;
+
+            XsdComplexContent complexContent = complexType.getComplexContent();
+
+            if (complexContent != null){
+                XsdExtension extension = complexContent.getXsdExtension();
+
+                if (extension != null){
+                    extensionAttributes = extension.getXsdAttributes();
+                }
+            }
+
+            complexTypeAttributes = complexType.getXsdAttributes()
                     .filter(attribute -> attribute.getParent().getClass().equals(XsdComplexType.class));
+
+            if (extensionAttributes != null){
+                return Stream.concat(extensionAttributes, complexTypeAttributes);
+            } else {
+                return complexTypeAttributes;
+            }
         }
 
         return Stream.empty();
@@ -291,8 +316,14 @@ public class XsdAsmUtils {
      * @param apiName The api this class will belong.
      * @return The signature of the class.
      */
-    static String getClassSignature(String[] interfaces, String className, String apiName) {
-        StringBuilder signature = new StringBuilder("<P::" + ELEMENT_TYPE_DESC + ">L" + ABSTRACT_ELEMENT_TYPE + "<L" + getFullClassTypeName(className, apiName) + "<TP;>;TP;>;");
+    static String getClassSignature(XsdElement parent, String[] interfaces, String className, String apiName) {
+        StringBuilder signature;
+
+        if (parent == null){
+            signature = new StringBuilder("<Z::" + elementTypeDesc + ">L" + abstractElementType + "<L" + getFullClassTypeName(className, apiName) + "<TZ;>;TZ;>;");
+        } else {
+            signature = new StringBuilder("<Z::" + elementTypeDesc + ">L" + getFullClassTypeName(toCamelCase(parent.getName()), apiName) + "<TZ;>;");
+        }
 
         if (interfaces != null){
             for (String anInterface : interfaces) {
@@ -300,7 +331,7 @@ public class XsdAsmUtils {
                         .append(getFullClassTypeName(anInterface, apiName))
                         .append("<L")
                         .append(getFullClassTypeName(className, apiName))
-                        .append("<TP;>;TP;>;");
+                        .append("<TZ;>;TZ;>;");
             }
         }
 
@@ -314,13 +345,13 @@ public class XsdAsmUtils {
      * @return The interface signature.
      */
     static String getInterfaceSignature(String[] interfaces, String apiName) {
-        StringBuilder signature = new StringBuilder("<T::L" + ELEMENT_TYPE + "<TT;TP;>;P::" + ELEMENT_TYPE_DESC + ">Ljava/lang/Object;");
+        StringBuilder signature = new StringBuilder("<T::L" + elementType + "<TT;TZ;>;Z::" + elementTypeDesc + ">" + JAVA_OBJECT_DESC);
 
         if (interfaces != null){
             for (String anInterface : interfaces) {
                 signature.append("L")
                         .append(getFullClassTypeName(anInterface, apiName))
-                        .append("<TT;TP;>;");
+                        .append("<TT;TZ;>;");
             }
         }
 
@@ -344,7 +375,7 @@ public class XsdAsmUtils {
             }
         }
 
-        classWriter.visit(V1_8, classModifiers, getFullClassTypeName(className, apiName), signature, superName, interfaces);
+        classWriter.visit(V9, classModifiers, getFullClassTypeName(className, apiName), signature, superName, interfaces);
 
         return classWriter;
     }

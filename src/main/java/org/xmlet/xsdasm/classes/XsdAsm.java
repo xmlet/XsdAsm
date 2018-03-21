@@ -1,13 +1,16 @@
 package org.xmlet.xsdasm.classes;
 
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
+import org.xmlet.xsdparser.xsdelements.XsdAttribute;
 import org.xmlet.xsdparser.xsdelements.XsdElement;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.xmlet.xsdasm.classes.XsdAsmAttributes.generateAttribute;
 import static org.xmlet.xsdasm.classes.XsdAsmUtils.createGeneratedFilesDirectory;
 import static org.xmlet.xsdasm.classes.XsdAsmVisitors.generateVisitors;
 import static org.xmlet.xsdasm.classes.XsdSupportingStructure.createSupportingInfrastructure;
@@ -15,7 +18,7 @@ import static org.xmlet.xsdasm.classes.XsdSupportingStructure.createSupportingIn
 public class XsdAsm {
 
     private XsdAsmInterfaces interfaceGenerator = new XsdAsmInterfaces(this);
-    private List<String> createdAttributes = new ArrayList<>();
+    private Map<String, List<XsdAttribute>> createdAttributes = new HashMap<>();
 
     /**
      * This method is the entry point for the class creation process.
@@ -40,6 +43,16 @@ public class XsdAsm {
         interfaceGenerator.generateInterfaces(createdAttributes, apiName);
 
         generateVisitors(interfaceGenerator.getExtraElementsForVisitor(), apiName);
+
+        generateAttributes(apiName);
+    }
+
+    private void generateAttributes(String apiName) {
+        createdAttributes.keySet().forEach(attribute ->
+            createdAttributes.get(attribute).forEach(attributeVariation ->
+                generateAttribute(attributeVariation, apiName)
+            )
+        );
     }
 
     void generateClassFromElement(XsdElement element, String apiName){

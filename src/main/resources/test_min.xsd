@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://schemas.microsoft.com/client/2007"
+           elementFormDefault="qualified"
+           xmlns="http://schemas.microsoft.com/client/2007"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <xsd:element name="personInfoElementContainer">
+        <xsd:complexType>
+            <xsd:group>
+                <xsd:all>
+                    <xs:element name="personInfo">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element name="firstName" type="xs:string"/>
+                                <xs:element name="lastName" type="xs:string"/>
+                                <xs:element name="personAddress" type="xs:string"/>
+                                <xs:element name="city" type="xs:string"/>
+                                <xs:element name="country" type="xs:string"/>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
+                </xsd:all>
+            </xsd:group>
+        </xsd:complexType>
+    </xsd:element>
+
+    <!-- **************************************************************** -->
+
+    <xs:element name="aName">
+        <xs:complexType>
+            <xs:group name="groupWSequence">
+                <xs:sequence>
+                    <xs:element name="elem1" type="xs:string"/>
+                    <xs:element name="elem2" type="xs:string"/>
+                </xs:sequence>
+            </xs:group>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- **************************************************************** -->
+
+    <xs:element name="studentGrades">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="firstName" type="xs:string"/>
+                <xs:element name="lastName" type="xs:string"/>
+                <xs:group>
+                    <xsd:all>
+                        <xs:element name="gradeNumeric"/>
+                        <xs:element name="gradeQualitative"/>
+                    </xsd:all>
+                </xs:group>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- **************************************************************** -->
+
+    <xsd:element name="intvalues">
+        <xsd:complexType>
+            <xsd:attribute name="intlist" type="valuelist"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:simpleType name="valuelist">
+        <xsd:restriction>
+            <xsd:maxLength value="5"/>
+            <xsd:minLength value="1"/>
+        </xsd:restriction>
+        <xsd:list itemType="xsd:int"/>
+    </xsd:simpleType>
+</xs:schema>

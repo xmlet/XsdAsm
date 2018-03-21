@@ -11,6 +11,11 @@ import static org.xmlet.xsdasm.classes.XsdAsmUtils.*;
 import static org.xmlet.xsdasm.classes.XsdSupportingStructure.*;
 
 class XsdAsmVisitors {
+
+    private static final String VISIT_METHOD_NAME = "visit";
+    
+    private XsdAsmVisitors(){}
+
     /**
      * Generates both the visitor interface and abstract visitor with method for each element from the list.
      * @param elementNames The elements names list.
@@ -28,11 +33,11 @@ class XsdAsmVisitors {
      * @param apiName The api this class will belong to.
      */
     private static void generateVisitorInterface(Set<String> elementNames, String apiName) {
-        ClassWriter classWriter = generateClass(VISITOR, JAVA_OBJECT, null, "<R:Ljava/lang/Object;>Ljava/lang/Object;", ACC_PUBLIC + ACC_ABSTRACT + ACC_INTERFACE, apiName);
+        ClassWriter classWriter = generateClass(VISITOR, JAVA_OBJECT, null, "<R:" + JAVA_OBJECT_DESC + ">" + JAVA_OBJECT_DESC, ACC_PUBLIC + ACC_ABSTRACT + ACC_INTERFACE, apiName);
 
         elementNames.forEach(elementName -> addVisitorInterfaceMethod(classWriter, elementName, null, apiName));
 
-        addVisitorInterfaceMethod(classWriter, TEXT_CLASS, "<U:Ljava/lang/Object;>(L" + TEXT_TYPE + "<TR;TU;*>;)V", apiName);
+        addVisitorInterfaceMethod(classWriter, firstToLower(TEXT_CLASS), "<U:" + JAVA_OBJECT_DESC + ">(L" + textType + "<TR;TU;*>;)V", apiName);
 
         writeClassToFile(VISITOR, classWriter, apiName);
     }
@@ -47,7 +52,7 @@ class XsdAsmVisitors {
     private static void addVisitorInterfaceMethod(ClassWriter classWriter, String elementName, String signature, String apiName){
         String elementTypeDesc = getFullClassTypeNameDesc(toCamelCase(elementName), apiName);
 
-        MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, "visit", "(" + elementTypeDesc + ")V", signature, null);
+        MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, VISIT_METHOD_NAME, "(" + elementTypeDesc + ")V", signature, null);
         mVisitor.visitLocalVariable(elementName, elementTypeDesc, signature, new Label(), new Label(),1);
         mVisitor.visitEnd();
     }
@@ -58,7 +63,7 @@ class XsdAsmVisitors {
      * @param apiName The api this class will belong to.
      */
     private static void generateAbstractVisitor(Set<String> elementNames, String apiName) {
-        ClassWriter classWriter = generateClass(ABSTRACT_VISITOR, JAVA_OBJECT, new String[]{VISITOR}, "<R:Ljava/lang/Object;>Ljava/lang/Object;L" + ELEMENT_VISITOR_TYPE + "<TR;>;", ACC_PUBLIC + ACC_ABSTRACT + ACC_SUPER, apiName);
+        ClassWriter classWriter = generateClass(ABSTRACT_VISITOR, JAVA_OBJECT, new String[]{VISITOR}, "<R:" + JAVA_OBJECT_DESC + ">" + JAVA_OBJECT_DESC + "L" + elementVisitorType + "<TR;>;", ACC_PUBLIC + ACC_ABSTRACT + ACC_SUPER, apiName);
 
         MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC, CONSTRUCTOR, "()V", null, null);
         mVisitor.visitCode();
@@ -68,13 +73,13 @@ class XsdAsmVisitors {
         mVisitor.visitMaxs(1, 1);
         mVisitor.visitEnd();
 
-        mVisitor = classWriter.visitMethod(ACC_ABSTRACT + ACC_PUBLIC, "visit", "(" + ELEMENT_TYPE_DESC + ")V", "<T::" + ELEMENT_TYPE_DESC + ">(L" + ELEMENT_TYPE + "<TT;*>;)V", null);
-        mVisitor.visitLocalVariable("elem", ELEMENT_TYPE_DESC, "L" + ELEMENT_TYPE + "<TT;*>;", new Label(), new Label(),1);
+        mVisitor = classWriter.visitMethod(ACC_ABSTRACT + ACC_PUBLIC, VISIT_METHOD_NAME, "(" + elementTypeDesc + ")V", "<T::" + elementTypeDesc + ">(L" + elementType + "<TT;*>;)V", null);
+        mVisitor.visitLocalVariable("elem", elementTypeDesc, "L" + elementType + "<TT;*>;", new Label(), new Label(),1);
         mVisitor.visitEnd();
 
         elementNames.forEach(elementName -> addAbstractVisitorMethod(classWriter, elementName, null, apiName));
 
-        addAbstractVisitorMethod(classWriter, TEXT_CLASS, "<U:Ljava/lang/Object;>(L" + TEXT_TYPE + "<TR;TU;*>;)V", apiName);
+        addAbstractVisitorMethod(classWriter, firstToLower(TEXT_CLASS), "<U:" + JAVA_OBJECT_DESC + ">(L" + textType + "<TR;TU;*>;)V", apiName);
 
         writeClassToFile(ABSTRACT_VISITOR, classWriter, apiName);
     }
@@ -89,12 +94,12 @@ class XsdAsmVisitors {
     private static void addAbstractVisitorMethod(ClassWriter classWriter, String elementName, String signature, String apiName){
         String elementTypeDesc = getFullClassTypeNameDesc(toCamelCase(elementName), apiName);
 
-        MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC, "visit", "(" + elementTypeDesc + ")V", signature, null);
+        MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC, VISIT_METHOD_NAME, "(" + elementTypeDesc + ")V", signature, null);
         mVisitor.visitLocalVariable(elementName, elementTypeDesc, null, new Label(), new Label(),1);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitVarInsn(ALOAD, 1);
-        mVisitor.visitMethodInsn(INVOKEVIRTUAL, ABSTRACT_ELEMENT_VISITOR_TYPE, "visit", "(" + ELEMENT_TYPE_DESC + ")V", false);
+        mVisitor.visitMethodInsn(INVOKEVIRTUAL, abstractElementVisitorType, VISIT_METHOD_NAME, "(" + XsdSupportingStructure.elementTypeDesc + ")V", false);
         mVisitor.visitInsn(RETURN);
         mVisitor.visitMaxs(2, 2);
         mVisitor.visitEnd();
