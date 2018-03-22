@@ -881,7 +881,7 @@ class XsdSupportingStructure {
         ClassWriter classWriter = new ClassWriter(0);
         MethodVisitor mVisitor;
 
-        classWriter.visit(V9, ACC_PUBLIC + ACC_SUPER, restrictionValidatorType, null, JAVA_OBJECT, null);
+        classWriter.visit(V1_8, ACC_PUBLIC + ACC_SUPER, restrictionValidatorType, null, JAVA_OBJECT, null);
 
         mVisitor = classWriter.visitMethod(ACC_PRIVATE, CONSTRUCTOR, "()V", null, null);
         mVisitor.visitCode();

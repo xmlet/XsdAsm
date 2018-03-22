@@ -375,7 +375,7 @@ public class XsdAsmUtils {
             }
         }
 
-        classWriter.visit(V9, classModifiers, getFullClassTypeName(className, apiName), signature, superName, interfaces);
+        classWriter.visit(V1_8, classModifiers, getFullClassTypeName(className, apiName), signature, superName, interfaces);
 
         return classWriter;
     }
