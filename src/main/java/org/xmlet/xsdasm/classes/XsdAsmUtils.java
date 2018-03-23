@@ -322,7 +322,7 @@ public class XsdAsmUtils {
         if (parent == null){
             signature = new StringBuilder("<Z::" + elementTypeDesc + ">L" + abstractElementType + "<L" + getFullClassTypeName(className, apiName) + "<TZ;>;TZ;>;");
         } else {
-            signature = new StringBuilder("<Z::" + elementTypeDesc + ">L" + getFullClassTypeName(toCamelCase(parent.getName()), apiName) + "<TZ;>;");
+            signature = new StringBuilder("<Z::" + elementTypeDesc + ">L" + getFullClassTypeName(toCamelCase(parent.getName().replaceAll("[^a-zA-Z0-9]", "")), apiName) + "<TZ;>;");
         }
 
         if (interfaces != null){

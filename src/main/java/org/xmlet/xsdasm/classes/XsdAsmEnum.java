@@ -23,7 +23,7 @@ class XsdAsmEnum {
     private XsdAsmEnum(){}
 
     static void createEnum(XsdAttribute attribute, List<XsdEnumeration> enumerations, String apiName){
-        String enumName = getEnumName(attribute);
+        String enumName = getEnumName(attribute).replaceAll("[^a-zA-Z0-9]", "");
         String enumType = getFullClassTypeName(enumName, apiName);
         String enumTypeDesc = getFullClassTypeNameDesc(enumName, apiName);
 
@@ -34,7 +34,7 @@ class XsdAsmEnum {
         FieldVisitor fVisitor;
 
         enumerations.forEach(enumElem -> {
-            FieldVisitor fieldVisitor = cw.visitField(ACC_PUBLIC + ACC_FINAL + ACC_STATIC + ACC_ENUM, getEnumElementName(enumElem).replaceAll("[^a-zA-Z0-9]", ""), enumTypeDesc, null, null);
+            FieldVisitor fieldVisitor = cw.visitField(ACC_PUBLIC + ACC_FINAL + ACC_STATIC + ACC_ENUM, getEnumElementName(enumElem), enumTypeDesc, null, null);
             fieldVisitor.visitEnd();
         });
 
@@ -98,7 +98,7 @@ class XsdAsmEnum {
         int iConst = 0;
 
         for (XsdEnumeration enumElem : enumerations) {
-            String elemName = getEnumElementName(enumElem).replaceAll("[^a-zA-Z0-9]", "");
+            String elemName = getEnumElementName(enumElem);
             staticConstructor.visitTypeInsn(NEW, enumType);
             staticConstructor.visitInsn(DUP);
             staticConstructor.visitLdcInsn(elemName);
@@ -129,7 +129,7 @@ class XsdAsmEnum {
         for (XsdEnumeration enumElem : enumerations){
             staticConstructor.visitInsn(DUP);
             staticConstructor.visitIntInsn(BIPUSH, iConst);
-            staticConstructor.visitFieldInsn(GETSTATIC, enumType, getEnumElementName(enumElem).replaceAll("[^a-zA-Z0-9]", ""), enumTypeDesc);
+            staticConstructor.visitFieldInsn(GETSTATIC, enumType, getEnumElementName(enumElem), enumTypeDesc);
             staticConstructor.visitInsn(AASTORE);
             iConst += 1;
         }
@@ -156,14 +156,14 @@ class XsdAsmEnum {
         String enumPrefix = "Enum";
 
         if (attribute.getType() != null){
-            return enumPrefix + toCamelCase(attribute.getName()) + toCamelCase(attribute.getType());
+            return enumPrefix + toCamelCase(attribute.getName().replaceAll("[^a-zA-Z0-9]", "")) + toCamelCase(attribute.getType());
         }
 
         XsdAbstractElement elem = attribute;
 
         while (elem != null){
             if (elem instanceof XsdElement){
-                return enumPrefix + toCamelCase(attribute.getName()) + ((XsdElement) elem).getName();
+                return enumPrefix + toCamelCase(attribute.getName().replaceAll("[^a-zA-Z0-9]", "")) + ((XsdElement) elem).getName();
             }
 
             elem = elem.getParent();
