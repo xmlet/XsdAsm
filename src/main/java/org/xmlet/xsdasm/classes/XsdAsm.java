@@ -27,18 +27,15 @@ public class XsdAsm {
      * @param elements The elements which will serve as base to the generated classes.
      * @param apiName The resulting API name.
      */
-    public void generateClassFromElements(Stream<XsdAbstractElement> elements, String apiName){
+    public void generateClassFromElements(Stream<XsdElement> elements, String apiName){
         createGeneratedFilesDirectory(apiName);
 
         createSupportingInfrastructure(apiName);
 
-        List<XsdElement> elementList = elements.filter(element -> element instanceof XsdElement)
-                .map(element -> (XsdElement) element)
-                .collect(Collectors.toList());
-
-        elementList.forEach(element -> interfaceGenerator.addCreatedElement(element));
-
-        elementList.forEach(element -> generateClassFromElement(element, apiName));
+        elements.forEach(element -> {
+            interfaceGenerator.addCreatedElement(element);
+            generateClassFromElement(element, apiName);
+        });
 
         interfaceGenerator.generateInterfaces(createdAttributes, apiName);
 

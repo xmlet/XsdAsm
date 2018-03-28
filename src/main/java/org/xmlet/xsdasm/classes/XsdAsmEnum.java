@@ -23,7 +23,7 @@ class XsdAsmEnum {
     private XsdAsmEnum(){}
 
     static void createEnum(XsdAttribute attribute, List<XsdEnumeration> enumerations, String apiName){
-        String enumName = getEnumName(attribute).replaceAll("[^a-zA-Z0-9]", "");
+        String enumName = getEnumName(attribute);
         String enumType = getFullClassTypeName(enumName, apiName);
         String enumTypeDesc = getFullClassTypeNameDesc(enumName, apiName);
 
@@ -156,20 +156,20 @@ class XsdAsmEnum {
         String enumPrefix = "Enum";
 
         if (attribute.getType() != null){
-            return enumPrefix + toCamelCase(attribute.getName().replaceAll("[^a-zA-Z0-9]", "")) + toCamelCase(attribute.getType());
+            return enumPrefix + getCleanName(attribute) + toCamelCase(attribute.getType().replaceAll("[^a-zA-Z0-9]", ""));
         }
 
         XsdAbstractElement elem = attribute;
 
         while (elem != null){
             if (elem instanceof XsdElement){
-                return enumPrefix + toCamelCase(attribute.getName().replaceAll("[^a-zA-Z0-9]", "")) + ((XsdElement) elem).getName();
+                return enumPrefix + getCleanName(attribute) + toCamelCase(((XsdElement) elem).getName());
             }
 
             elem = elem.getParent();
         }
 
-        return enumPrefix + toCamelCase(attribute.getName());
+        return enumPrefix + getCleanName(attribute);
     }
 
 }

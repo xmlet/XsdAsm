@@ -24,7 +24,7 @@ class XsdAsmAttributes {
      */
     @SuppressWarnings("DanglingJavadoc")
     static void generateMethodsForAttribute(ClassWriter classWriter, XsdAttribute elementAttribute, String returnType, String apiName) {
-        String className = ATTRIBUTE_PREFIX + toCamelCase(elementAttribute.getName()).replaceAll("[^a-zA-Z0-9]", "");
+        String className = ATTRIBUTE_PREFIX + getCleanName(elementAttribute);
         String camelCaseName = className.toLowerCase().charAt(0) + className.substring(1);
         String attributeClassType = getFullClassTypeName(getAttributeName(elementAttribute), apiName);
         MethodVisitor mVisitor;
@@ -41,7 +41,7 @@ class XsdAsmAttributes {
             mVisitor = classWriter.visitMethod(ACC_PUBLIC, camelCaseName, "(" + javaType + ")" + returnType, "(" + javaType + ")" + returnType.substring(0, returnType.length() - 1) + "<TZ;>;", null);
         }
 
-        String attrName = "attr" + toCamelCase(elementAttribute.getName().replaceAll("[^a-zA-Z0-9]", ""));
+        String attrName = "attr" + getCleanName(elementAttribute);
         attrName = attrName.substring(0, 1).toLowerCase() + attrName.substring(1);
 
         mVisitor.visitLocalVariable(attrName, javaType, null, new Label(), new Label(),1);
@@ -147,10 +147,10 @@ class XsdAsmAttributes {
      * AttrTypeStyle(EnumTypeStyle)             NO NAME
      */
     private static String getAttributeName(XsdAttribute attribute) {
-        String name = ATTRIBUTE_PREFIX + toCamelCase(attribute.getName()).replaceAll("[^a-zA-Z0-9]", "");
+        String name = ATTRIBUTE_PREFIX + getCleanName(attribute);
 
         if (attributeHasEnum(attribute)) {
-            return name + getEnumName(attribute).replaceAll(name, "").replaceAll("[^a-zA-Z0-9]", "");
+            return name + getEnumName(attribute).replaceAll(name, "");
         }
 
         String javaType = getFullJavaType(attribute);

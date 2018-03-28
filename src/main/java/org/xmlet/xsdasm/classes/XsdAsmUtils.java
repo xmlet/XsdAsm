@@ -322,7 +322,7 @@ public class XsdAsmUtils {
         if (parent == null){
             signature = new StringBuilder("<Z::" + elementTypeDesc + ">L" + abstractElementType + "<L" + getFullClassTypeName(className, apiName) + "<TZ;>;TZ;>;");
         } else {
-            signature = new StringBuilder("<Z::" + elementTypeDesc + ">L" + getFullClassTypeName(toCamelCase(parent.getName().replaceAll("[^a-zA-Z0-9]", "")), apiName) + "<TZ;>;");
+            signature = new StringBuilder("<Z::" + elementTypeDesc + ">L" + getFullClassTypeName(getCleanName(parent), apiName) + "<TZ;>;");
         }
 
         if (interfaces != null){
@@ -380,5 +380,20 @@ public class XsdAsmUtils {
         return classWriter;
     }
 
+    static String getCleanName(XsdReferenceElement element){
+        return getCleanName(element.getName());
+    }
+
+    static String getCleanName(String name){
+        String[] parts = name.split("_");
+
+        StringBuilder result = new StringBuilder();
+
+        for (String part : parts) {
+            result.append(toCamelCase(part));
+        }
+
+        return result.toString();
+    }
 }
 
