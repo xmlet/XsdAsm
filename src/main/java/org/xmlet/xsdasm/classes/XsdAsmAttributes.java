@@ -1,6 +1,8 @@
 package org.xmlet.xsdasm.classes;
 
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
 import org.xmlet.xsdparser.xsdelements.XsdAttribute;
 import org.xmlet.xsdparser.xsdelements.XsdList;
 import org.xmlet.xsdparser.xsdelements.XsdRestriction;

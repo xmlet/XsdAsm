@@ -1,13 +1,11 @@
 package org.xmlet.xsdasm.classes;
 
-import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdAttribute;
 import org.xmlet.xsdparser.xsdelements.XsdElement;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.xmlet.xsdasm.classes.XsdAsmAttributes.generateAttribute;

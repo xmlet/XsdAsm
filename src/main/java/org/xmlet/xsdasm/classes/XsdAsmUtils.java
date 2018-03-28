@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
-import static org.objectweb.asm.Opcodes.V9;
 import static org.objectweb.asm.Opcodes.V1_8;
 import static org.xmlet.xsdasm.classes.XsdAsmAttributes.generateMethodsForAttribute;
 import static org.xmlet.xsdasm.classes.XsdSupportingStructure.*;

@@ -281,16 +281,7 @@ class XsdAsmInterfaces {
      * @return A pair with the key being the name of the created group interface and the current interface index after the creation of the interface.
      */
     private InterfaceInfo groupMethod(String groupName, XsdChoice choiceElement, XsdAll allElement, XsdSequence sequenceElement, String className, int interfaceIndex, String apiName){
-        List<String> extendedInterfaces = new ArrayList<>();
-        String interfaceName = className + "Group" + interfaceIndex;
-        String[] extendedInterfacesArr;
-
-        if (groupName != null){
-            interfaceName = toCamelCase(groupName);
-        }
-
         InterfaceInfo interfaceInfo = null;
-        InterfaceInfo groupInterfaceInfo = null;
 
         if (allElement != null) {
             interfaceInfo = iterativeCreation(allElement, className, interfaceIndex + 1, apiName, groupName).get(0);
@@ -304,24 +295,11 @@ class XsdAsmInterfaces {
             interfaceInfo = iterativeCreation(sequenceElement, className, interfaceIndex + 1, apiName, groupName).get(0);
         }
 
-        if (interfaceInfo != null){
-            extendedInterfaces.add(interfaceInfo.getInterfaceName());
-
-            groupInterfaceInfo = new InterfaceInfo(interfaceName, interfaceInfo.getInterfaceIndex(), new InterfaceInfo[] {interfaceInfo});
+        if (interfaceInfo == null){
+            interfaceInfo = new InterfaceInfo(TEXT_GROUP, 0, new InterfaceInfo[]{});
         }
 
-        if (extendedInterfaces.isEmpty()){
-            extendedInterfacesArr = new String[]{TEXT_GROUP};
-        } else {
-            extendedInterfacesArr = new String[extendedInterfaces.size()];
-            extendedInterfaces.toArray(extendedInterfacesArr);
-        }
-
-        ClassWriter classWriter = generateClass(interfaceName, JAVA_OBJECT, extendedInterfacesArr, getInterfaceSignature(extendedInterfacesArr, apiName), ACC_PUBLIC + ACC_ABSTRACT + ACC_INTERFACE, apiName);
-
-        writeClassToFile(interfaceName, classWriter, apiName);
-
-        return groupInterfaceInfo;
+        return interfaceInfo;
     }
 
     /**
