@@ -78,7 +78,7 @@ public class Example{
 <div style="text-align:right"> 
     The generated classes will be written in the target folder of the invoking project. For example, the 
     <a href="https://github.com/xmlet/HtmlApi/blob/master/create_class_binaries.bat">HtmlApi</a> project 
-    invokes the XsdAsmMain, generating all the HmlApi needed classes and writes them in the HtmlApi target folder, this 
+    invokes the <i>XsdAsmMain</i>, generating all the HmlApi needed classes and writes them in the HtmlApi target folder, this 
     way when HtmlApi is used as a dependency those classes appear as normal classes as if they were manually created.
 </div>
 
@@ -151,7 +151,7 @@ public class Head extends AbstractElement {
 }
 ```
 <div style="text-align:right"> 
-    <b>Manifest Attribute</b> - A class that represents the Manifest attribute, deriving from BaseAttribute.
+    <b>Manifest Attribute</b> - A class that represents the <i>Manifest</i> attribute, deriving from <i>BaseAttribute</i>.
     <br />
     <br />
 </div> 
@@ -238,7 +238,7 @@ public class AttrIntList extends BaseAttribute<List> {
 #### Enumerations
 
 <div style="text-align:right"> 
-    In regard to the restrictions there is a special restriction that can be enforced at compile time, the enumerations. 
+    In regard to the restrictions there is a special restriction that can be enforced at compile time, the <i>xsd:enumeration</i>. 
     In order to obtain that validation at compile time the XsdAsm library generates Enum classes that contain all the 
     values indicated in the <i>xsd:enumeration</i> tags. In the following example we have an attribute with three possible 
     values, command, checkbox and radio. 
@@ -261,6 +261,7 @@ public class AttrIntList extends BaseAttribute<List> {
 <div style="text-align:right"> 
     This results in the creation of an Enum, <i>EnumTypeCommand</i>, as shown and the attribute will then receive an instance 
     of <i>EnumTypeCommand</i>, ensuring only allowed values are used.
+    <br />
     <br />
 </div>
 
