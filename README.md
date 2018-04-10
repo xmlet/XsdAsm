@@ -6,7 +6,7 @@
 
 # XsdAsm
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     XsdAsm is a library dedicated to generate a fluent java API based on a XSD file. It uses 
     <a href="https://github.com/xmlet/XsdParser">XsdParser</a> library to parse the xsd file into a list of java elements 
     that XsdAsm will use in order to obtain the information needed to generate the correspondent classes. In order to 
@@ -19,7 +19,7 @@
 
 ## Installation
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     First, in order to include it to your Maven project, simply add this dependency:
     <br />
     <br />
@@ -35,7 +35,7 @@
 
 ## How does XsdAsm works?
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     In order to provide a better understanding of this library we need a quick information about XSD language. XSD files 
     are based in two different type of values, elements and attributes. How those two different values work? Elements 
     are the more complex value type, they can have attributes and contain other elements. Attributes on the other hand 
@@ -43,8 +43,11 @@
     that supports every generated API as shown below:
     <br />
     <br />
-    <img src="https://raw.githubusercontent.com/xmlet/HtmlApiTest/master/src/test/resources/infrastructure.png" align="middle"/>
-    <br />
+</div>
+<p align="center">
+    <img src="https://raw.githubusercontent.com/xmlet/HtmlApiTest/master/src/test/resources/infrastructure.png"/>
+</p>
+<div style="text-align:right"> 
     <br />
     The <i>Attribute</i> and <i>Element</i> interfaces serve as a base to all attributes and elements that will be present in any 
     given API, with <i>AbstractElement</i> as an abstract class from which the concrete elements will derive. This abstract 
@@ -55,7 +58,7 @@
 
 ### Concrete Usage
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     XsdAsm provides a <i>XsdAsmMain</i> class that receives two arguments, the first one being the xsd file path and the second 
     the name of the API to be generated. All the generated APIs are placed in the same base package, <i>org.xmlet</i>, 
     the difference being the chosen API name, for example, if the api name is <i>htmlapi</i>, the resulting package name 
@@ -72,7 +75,7 @@ public class Example{
 }
 ```
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     The generated classes will be written in the target folder of the invoking project. For example, the 
     <a href="https://github.com/xmlet/HtmlApi/blob/master/create_class_binaries.bat">HtmlApi</a> project 
     invokes the XsdAsmMain, generating all the HmlApi needed classes and writes them in the HtmlApi target folder, this 
@@ -81,7 +84,7 @@ public class Example{
 
 ### Examples
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     Using the <i>Html</i> element from the HTML5 specification a simple example will be explained, which can be extrapolated to 
     other elements. Some simplification will be made in this example for easier understanding.
     <br />
@@ -101,7 +104,7 @@ public class Example{
 </xs:element>
 ```
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     With this example in my what classes will need to be generated?
     <br />
     <br />
@@ -130,7 +133,7 @@ public class Html extends AbstractElement implements CommonAttributeGroup {
 }
 ```
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     <b>Body and Head classes</b> - Classes for both <i>Body</i> and <i>Head</i> elements.
     <br />
     <br />
@@ -147,7 +150,7 @@ public class Head extends AbstractElement {
     (...)
 }
 ```
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     <b>Manifest Attribute</b> - A class that represents the Manifest attribute, deriving from BaseAttribute.
     <br />
     <br />
@@ -161,7 +164,7 @@ public class AttrManifest extends BaseAttribute<String> {
 }
 ```
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     <b>CommonAttributeGroup Interface</b> - An interface with default methods that add the group attributes to the concrete element.
     <br />
     <br />
@@ -180,7 +183,7 @@ public interface CommonAttributeGroup extends Element {
 
 ### Restriction Validation
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     In the description of any given xsd file there are many restrictions in the way the elements are contained in each 
     other and which attributes are allowed. Reflecting those same restrictions to the Java language we have two ways of 
     ensure those same restrictions, either at runtime or in compile time. This library tries to validate most of the 
@@ -208,7 +211,7 @@ public interface CommonAttributeGroup extends Element {
 </xs:schema>
 ```
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     In this example we have an element that has an attribute called valueList. This attribute has some restrictions, it 
     is represented by a <i>xsd:list</i> and its element count should be between 1 and 5. Transporting this example to the Java 
     language it will result in the following class:
@@ -224,7 +227,7 @@ public class AttrIntList extends BaseAttribute<List> {
 }
 ```
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     But with this solution the <i>xsd:maxLength</i> and <i>xsd:minLength</i> are ignored. To solve this problem the existing 
     restrictions existing in any given attribute are hardcoded in the class static constructor, which stores the 
     restrictions in a Map object. This way, whenever an instance is created a validation function is called
@@ -234,7 +237,7 @@ public class AttrIntList extends BaseAttribute<List> {
 
 #### Enumerations
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     In regard to the restrictions there is a special restriction that can be enforced at compile time, the enumerations. 
     In order to obtain that validation at compile time the XsdAsm library generates Enum classes that contain all the 
     values indicated in the <i>xsd:enumeration</i> tags. In the following example we have an attribute with three possible 
@@ -255,7 +258,7 @@ public class AttrIntList extends BaseAttribute<List> {
 </xs:attribute>
 ```
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     This results in the creation of an Enum, <i>EnumTypeCommand</i>, as shown and the attribute will then receive an instance 
     of <i>EnumTypeCommand</i>, ensuring only allowed values are used.
     <br />
@@ -279,7 +282,7 @@ public class AttrTypeEnumTypeCommand extends BaseAttribute<String> {
 
 ### Visitors
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     This library also uses the Visitor pattern. Using this pattern allows different uses for the same API, given that 
     different Visitors are implemented. In the generation of the API two classes are created:
     <br />
@@ -295,7 +298,7 @@ public class AttrTypeEnumTypeCommand extends BaseAttribute<String> {
 
 ### Element Binding
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     In order to support repetitive tasks over an element binders were implemented. This allows for users to define, 
     for example, templates for a given element. An example is presented below, it uses the Html5 API as example.
     <br />
@@ -321,7 +324,7 @@ public class BinderExample{
 }
 ```
 
-<div style="text-align: right">
+<div style="text-align:right">
     In this example a table is created, and a title is added in the first row as a title header. In regard to the values 
     present in the table instead of having them inserted right away it is possible delay that insertion by indicating 
     what will the element do when the information is received. This way a template can be defined and reused with 
@@ -330,7 +333,7 @@ public class BinderExample{
 
 ## Code Quality
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     There are some tests available using the HTML5 schema and the Android layouts schema, you can give a look at that 
     examples and tweak them in order to gain a better understanding of how the class generation works. The tests also 
     cover most of the code, if you are interested in verifying the code quality, vulnerabilities and other various 
@@ -342,7 +345,7 @@ public class BinderExample{
 
 ## Final remarks
 
-<div style="text-align: right"> 
+<div style="text-align:right"> 
     Some examples presented here are simplified in order to give a better understanding of how this library works. In 
     order to allow a better usage for the generated API end user there are multiple improvements made using type arguments.
 </div>
