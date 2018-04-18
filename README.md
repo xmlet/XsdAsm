@@ -105,7 +105,7 @@ public class Example{
 ```
 
 <div style="text-align:right"> 
-    With this example in my what classes will need to be generated?
+    With this example in mind what classes will need to be generated?
     <br />
     <br />
     <b>Html Element</b> - A class that represents the <i>Html</i> element, deriving from <i>AbstractElement</i>.  <br />
