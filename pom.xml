@@ -225,7 +225,7 @@
         <dependency>
             <groupId>com.github.xmlet</groupId>
             <artifactId>xsdParser</artifactId>
-            <version>1.0.7</version>
+            <version>1.0.7-snapshot</version>
         </dependency>
     </dependencies>
 

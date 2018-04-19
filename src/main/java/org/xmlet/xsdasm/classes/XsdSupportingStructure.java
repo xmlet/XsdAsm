@@ -29,7 +29,6 @@ class XsdSupportingStructure {
     private static final String RESTRICTION_VIOLATION_EXCEPTION = "RestrictionViolationException";
     private static final String RESTRICTION_VALIDATOR = "RestrictionValidator";
     static final String VISITOR = "ElementVisitor";
-    static final String ABSTRACT_VISITOR = "AbstractElementVisitor";
     static final String ENUM_INTERFACE = "EnumInterface";
     static final String ATTRIBUTE_PREFIX = "Attr";
 
@@ -48,7 +47,6 @@ class XsdSupportingStructure {
     private static String restrictionValidatorType;
     static String elementVisitorType;
     static String elementVisitorTypeDesc;
-    static String abstractElementVisitorType;
     static String enumInterfaceType;
 
     private XsdSupportingStructure(){}
@@ -76,7 +74,6 @@ class XsdSupportingStructure {
         restrictionValidatorType = getFullClassTypeName(RESTRICTION_VALIDATOR, apiName);
         elementVisitorType = getFullClassTypeName(VISITOR, apiName);
         elementVisitorTypeDesc = getFullClassTypeNameDesc(VISITOR, apiName);
-        abstractElementVisitorType = getFullClassTypeName(ABSTRACT_VISITOR, apiName);
         enumInterfaceType = getFullClassTypeName(ENUM_INTERFACE, apiName);
 
         createElementInterface(apiName);
