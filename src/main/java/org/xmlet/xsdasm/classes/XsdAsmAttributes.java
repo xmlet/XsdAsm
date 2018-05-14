@@ -173,6 +173,10 @@ class XsdAsmAttributes {
 
         MethodVisitor mVisitor = attributeWriter.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
         mVisitor.visitCode();
+
+
+        //TODO Ver porque é que se retirar esta criação gera o problema com o float
+
         mVisitor.visitTypeInsn(NEW, "java/util/ArrayList");
         mVisitor.visitInsn(DUP);
         mVisitor.visitMethodInsn(INVOKESPECIAL, "java/util/ArrayList", CONSTRUCTOR, "()V", false);

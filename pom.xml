@@ -26,15 +26,30 @@
                         <goals>
                             <goal>java</goal>
                         </goals>
+                        <configuration>
+                            <mainClass>org.xmlet.xsdasm.main.XsdAsmMain</mainClass>
+                            <arguments>
+                                <argument>${project.basedir}\src\main\resources\test.xsd</argument>
+                                <argument>TestObjects</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>deploy_test_results</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${basedir}/run_sonar.bat</executable>
+                            <arguments>
+                                <argument>${sonarcloud.name}</argument>
+                                <argument>${sonarcloud.key}</argument>
+                            </arguments>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <mainClass>org.xmlet.xsdasm.main.XsdAsmMain</mainClass>
-                    <arguments>
-                        <argument>${project.basedir}\src\main\resources\test.xsd</argument>
-                        <argument>TestObjects</argument>
-                    </arguments>
-                </configuration>
             </plugin>
 
             <plugin>
@@ -104,6 +119,12 @@
                                 sign
                             </goal>
                         </goals>
+                        <configuration>
+                            <gpgArguments>
+                                <arg>--pinentry-mode</arg>
+                                <arg>loopback</arg>
+                            </gpgArguments>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

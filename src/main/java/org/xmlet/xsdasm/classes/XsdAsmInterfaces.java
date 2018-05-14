@@ -468,7 +468,7 @@ class XsdAsmInterfaces {
             }
         }
 
-        ClassWriter classWriter = generateClass(typeName, abstractElementType, nextTypeInterfaces, getClassSignature(null, nextTypeInterfaces, typeName, apiName), ACC_PUBLIC + ACC_SUPER, apiName);
+        ClassWriter classWriter = generateClass(typeName, abstractElementType, nextTypeInterfaces, getClassSignature(nextTypeInterfaces, typeName, apiName), ACC_PUBLIC + ACC_SUPER, apiName);
 
         XsdAsmElements.generateClassSpecificMethods(classWriter, typeName, apiName, abstractElementType, firstToLower(className));
 

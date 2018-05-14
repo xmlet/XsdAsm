@@ -12,6 +12,7 @@ import static org.xmlet.xsdasm.classes.XsdSupportingStructure.*;
 class XsdAsmVisitors {
 
     private static final String VISIT_METHOD_NAME = "visit";
+    private static final String SHARED_VISIT_METHOD_NAME = "sharedVisit";
     
     private XsdAsmVisitors(){}
 
@@ -32,7 +33,7 @@ class XsdAsmVisitors {
     private static void generateVisitorInterface(Set<String> elementNames, String apiName) {
         ClassWriter classWriter = generateClass(VISITOR, JAVA_OBJECT, null, "<R:" + JAVA_OBJECT_DESC + ">" + JAVA_OBJECT_DESC, ACC_PUBLIC + ACC_ABSTRACT + ACC_INTERFACE, apiName);
 
-        MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, VISIT_METHOD_NAME, "(" + elementTypeDesc + ")V", "<T::" + elementTypeDesc + ">(L" + elementType + "<TT;*>;)V", null);
+        MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, SHARED_VISIT_METHOD_NAME, "(" + elementTypeDesc + ")V", "<T::" + elementTypeDesc + ">(L" + elementType + "<TT;*>;)V", null);
         mVisitor.visitEnd();
 
         elementNames.forEach(elementName -> addVisitorInterfaceMethod(classWriter, elementName, null, apiName));
@@ -56,7 +57,7 @@ class XsdAsmVisitors {
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitVarInsn(ALOAD, 1);
-        mVisitor.visitMethodInsn(INVOKEINTERFACE, elementVisitorType, VISIT_METHOD_NAME, "(" + elementTypeDesc + ")V", true);
+        mVisitor.visitMethodInsn(INVOKEINTERFACE, elementVisitorType, SHARED_VISIT_METHOD_NAME, "(" + elementTypeDesc + ")V", true);
         mVisitor.visitInsn(RETURN);
         mVisitor.visitMaxs(2, 2);
         mVisitor.visitEnd();

@@ -315,14 +315,10 @@ public class XsdAsmUtils {
      * @param apiName The api this class will belong.
      * @return The signature of the class.
      */
-    static String getClassSignature(XsdElement parent, String[] interfaces, String className, String apiName) {
+    static String getClassSignature(String[] interfaces, String className, String apiName) {
         StringBuilder signature;
 
-        if (parent == null){
-            signature = new StringBuilder("<Z::" + elementTypeDesc + ">L" + abstractElementType + "<L" + getFullClassTypeName(className, apiName) + "<TZ;>;TZ;>;");
-        } else {
-            signature = new StringBuilder("<Z::" + elementTypeDesc + ">L" + getFullClassTypeName(getCleanName(parent), apiName) + "<TZ;>;");
-        }
+        signature = new StringBuilder("<Z::" + elementTypeDesc + ">L" + abstractElementType + "<L" + getFullClassTypeName(className, apiName) + "<TZ;>;TZ;>;");
 
         if (interfaces != null){
             for (String anInterface : interfaces) {

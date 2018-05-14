@@ -5,8 +5,11 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.xmlet.xsdparser.xsdelements.*;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -27,7 +30,62 @@ class XsdAsmElements {
     static void generateClassFromElement(XsdAsmInterfaces interfaceGenerator, Map<String, List<XsdAttribute>> createdAttributes, XsdElement element, String apiName) {
         String className = getCleanName(element);
 
-        XsdElement base = null;
+        XsdElement base = getBaseFromElement(element);
+
+        Stream<XsdAttribute> elementAttributes = getOwnAttributes(element);
+        String[] interfaces = interfaceGenerator.getInterfaces(element, apiName);
+
+        while (base != null) {
+            if (element.getName().equals("Button")){
+                int a = 5;
+            }
+
+            List<XsdAttribute> finalElementAttributes = elementAttributes.collect(Collectors.toList());
+            List<String> attributeNames = finalElementAttributes.stream().map(XsdAttribute::getName).collect(Collectors.toList());
+            List<XsdAttribute> moreAttributes = getOwnAttributes(base).filter(attribute -> !attributeNames.contains(attribute.getName())).collect(Collectors.toList());
+            finalElementAttributes.addAll(moreAttributes);
+            elementAttributes = finalElementAttributes.stream();
+
+            List<String> interfaceNames = Arrays.asList(interfaces);
+
+            for (String otherInterface : interfaceGenerator.getInterfaces(base, apiName)) {
+                if (!interfaceNames.contains(otherInterface)){
+                    interfaceNames.add(otherInterface);
+                }
+            }
+
+            interfaces = new String[interfaceNames.size()];
+            interfaceNames.toArray(interfaces);
+
+            base = getBaseFromElement(base);
+        }
+
+        String signature = getClassSignature(interfaces, className, apiName);
+
+        // String superType = base == null ? abstractElementType : getFullClassTypeName(getCleanName(base), apiName);
+
+        String superType = abstractElementType;
+
+        ClassWriter classWriter = generateClass(className, superType, interfaces, signature,ACC_PUBLIC + ACC_SUPER, apiName);
+
+        generateClassSpecificMethods(classWriter, className, apiName, superType, null);
+
+        /*
+        if (element.getName().equals("Button")){
+            List<String> c = elementAttributes.map(attribute -> attribute.getName()).collect(Collectors.toList());
+
+            Collections.sort(c);
+
+            int a = 5;
+        }
+        */
+
+        elementAttributes.forEach(elementAttribute -> generateMethodsAndCreateAttribute(createdAttributes, classWriter, elementAttribute, getFullClassTypeNameDesc(className, apiName), apiName));
+
+        writeClassToFile(className, classWriter, apiName);
+    }
+
+    private static XsdElement getBaseFromElement(XsdElement element) {
         XsdComplexType complexType = element.getXsdComplexType();
 
         if (complexType != null){
@@ -37,25 +95,12 @@ class XsdAsmElements {
                 XsdExtension extension = complexContent.getXsdExtension();
 
                 if (extension != null){
-                    base = extension.getBase();
+                    return extension.getBase();
                 }
             }
         }
 
-        Stream<XsdAttribute> elementAttributes = getOwnAttributes(element);
-        String[] interfaces = interfaceGenerator.getInterfaces(element, apiName);
-
-        String signature = getClassSignature(base, interfaces, className, apiName);
-
-        String superType = base == null ? abstractElementType : getFullClassTypeName(getCleanName(base), apiName);
-
-        ClassWriter classWriter = generateClass(className, superType, interfaces, signature,ACC_PUBLIC + ACC_SUPER, apiName);
-
-        generateClassSpecificMethods(classWriter, className, apiName, superType, null);
-
-        elementAttributes.forEach(elementAttribute -> generateMethodsAndCreateAttribute(createdAttributes, classWriter, elementAttribute, getFullClassTypeNameDesc(className, apiName), apiName));
-
-        writeClassToFile(className, classWriter, apiName);
+        return null;
     }
 
     /**
