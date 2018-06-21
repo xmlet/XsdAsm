@@ -36,10 +36,6 @@ class XsdAsmElements {
         String[] interfaces = interfaceGenerator.getInterfaces(element, apiName);
 
         while (base != null) {
-            if (element.getName().equals("Button")){
-                int a = 5;
-            }
-
             List<XsdAttribute> finalElementAttributes = elementAttributes.collect(Collectors.toList());
             List<String> attributeNames = finalElementAttributes.stream().map(XsdAttribute::getName).collect(Collectors.toList());
             List<XsdAttribute> moreAttributes = getOwnAttributes(base).filter(attribute -> !attributeNames.contains(attribute.getName())).collect(Collectors.toList());
@@ -63,24 +59,13 @@ class XsdAsmElements {
         String signature = getClassSignature(interfaces, className, apiName);
 
         // String superType = base == null ? abstractElementType : getFullClassTypeName(getCleanName(base), apiName);
-
         String superType = abstractElementType;
 
         ClassWriter classWriter = generateClass(className, superType, interfaces, signature,ACC_PUBLIC + ACC_SUPER, apiName);
 
         generateClassSpecificMethods(classWriter, className, apiName, superType, null);
 
-        /*
-        if (element.getName().equals("Button")){
-            List<String> c = elementAttributes.map(attribute -> attribute.getName()).collect(Collectors.toList());
-
-            Collections.sort(c);
-
-            int a = 5;
-        }
-        */
-
-        elementAttributes.forEach(elementAttribute -> generateMethodsAndCreateAttribute(createdAttributes, classWriter, elementAttribute, getFullClassTypeNameDesc(className, apiName), apiName));
+        elementAttributes.forEach(elementAttribute -> generateMethodsAndCreateAttribute(createdAttributes, classWriter, elementAttribute, getFullClassTypeNameDesc(className, apiName), className, apiName));
 
         writeClassToFile(className, classWriter, apiName);
     }
@@ -190,17 +175,6 @@ class XsdAsmElements {
         mVisitor.visitMaxs(2, 2);
         mVisitor.visitEnd();
 
-        /*
-        mVisitor = classWriter.visitMethod(ACC_PRIVATE + ACC_STATIC + ACC_SYNTHETIC, "lambda$accept$0", "(" + elementVisitorTypeDesc + elementTypeDesc + ")V", null, null);
-        mVisitor.visitCode();
-        mVisitor.visitVarInsn(ALOAD, 1);
-        mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitMethodInsn(INVOKEINTERFACE, elementType, "accept", "(" + elementVisitorTypeDesc + ")V", true);
-        mVisitor.visitInsn(RETURN);
-        mVisitor.visitMaxs(2, 2);
-        mVisitor.visitEnd();
-        */
-
         mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_BRIDGE + ACC_SYNTHETIC, "cloneElem", "()" + elementTypeDesc, null, null);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 0);
@@ -208,7 +182,6 @@ class XsdAsmElements {
         mVisitor.visitInsn(ARETURN);
         mVisitor.visitMaxs(1, 1);
         mVisitor.visitEnd();
-
 
         mVisitor = classWriter.visitMethod(ACC_PUBLIC, "cloneElem", "()" + classTypeDesc, "()L" + classType + "<TZ;>;", null);
         mVisitor.visitCode();
@@ -254,14 +227,12 @@ class XsdAsmElements {
         }
 
         mVisitor.visitCode();
+        mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitTypeInsn(NEW, childType);
         mVisitor.visitInsn(DUP);
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitMethodInsn(INVOKEINTERFACE, classType, "self", "()" + elementTypeDesc, true);
         mVisitor.visitMethodInsn(INVOKESPECIAL, childType, CONSTRUCTOR, "(" + elementTypeDesc + ")V", false);
-        mVisitor.visitVarInsn(ASTORE, 1);
-        mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitVarInsn(ALOAD, 1);
 
         if (isInterface){
             mVisitor.visitMethodInsn(INVOKEINTERFACE, classType, "addChild", "(" + elementTypeDesc + ")" + elementTypeDesc, true);
@@ -269,10 +240,8 @@ class XsdAsmElements {
             mVisitor.visitMethodInsn(INVOKEVIRTUAL, classType, "addChild", "(" + elementTypeDesc + ")" + elementTypeDesc, false);
         }
 
-        mVisitor.visitInsn(POP);
-        mVisitor.visitVarInsn(ALOAD, 1);
         mVisitor.visitInsn(ARETURN);
-        mVisitor.visitMaxs(3, 2);
+        mVisitor.visitMaxs(4, 1);
         mVisitor.visitEnd();
     }
 }

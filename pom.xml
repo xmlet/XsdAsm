@@ -20,24 +20,9 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.6.0</version>
                 <executions>
-                    <execution>
-                        <id>my-execution</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                        <configuration>
-                            <mainClass>org.xmlet.xsdasm.main.XsdAsmMain</mainClass>
-                            <arguments>
-                                <argument>${project.basedir}\src\main\resources\test.xsd</argument>
-                                <argument>TestObjects</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-
-                    <execution>
+                    <!--execution>
                         <id>deploy_test_results</id>
-                        <phase>install</phase>
+                        <phase>deploy</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -48,7 +33,7 @@
                                 <argument>${sonarcloud.key}</argument>
                             </arguments>
                         </configuration>
-                    </execution>
+                    </execution-->
                 </executions>
             </plugin>
 
@@ -119,12 +104,13 @@
                                 sign
                             </goal>
                         </goals>
-                        <configuration>
+                        <!--configuration>
                             <gpgArguments>
-                                <arg>--pinentry-mode</arg>
+                                If uncommented add another - before -pinentry
+                                <arg>-pinentry-mode</arg>
                                 <arg>loopback</arg>
                             </gpgArguments>
-                        </configuration>
+                        </configuration-->
                     </execution>
                 </executions>
             </plugin>
@@ -144,6 +130,26 @@
                         <version>2.2</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -246,7 +252,7 @@
         <dependency>
             <groupId>com.github.xmlet</groupId>
             <artifactId>xsdParser</artifactId>
-            <version>1.0.7-snapshot</version>
+            <version>1.0.8</version>
         </dependency>
     </dependencies>
 

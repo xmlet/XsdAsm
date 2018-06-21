@@ -255,8 +255,8 @@ public class XsdAsmUtils {
      * @param elementAttribute The attribute element.
      * @param apiName The api this class will belong.
      */
-    static void generateMethodsAndCreateAttribute(Map<String, List<XsdAttribute>> createdAttributes, ClassWriter classWriter, XsdAttribute elementAttribute, String returnType, String apiName) {
-        generateMethodsForAttribute(classWriter, elementAttribute, returnType, apiName);
+    static void generateMethodsAndCreateAttribute(Map<String, List<XsdAttribute>> createdAttributes, ClassWriter classWriter, XsdAttribute elementAttribute, String returnType, String className, String apiName) {
+        generateMethodsForAttribute(classWriter, elementAttribute, returnType, className,apiName);
 
         if (!createdAttributes.containsKey(elementAttribute.getName())){
             List<XsdAttribute> attributes = new ArrayList<>();

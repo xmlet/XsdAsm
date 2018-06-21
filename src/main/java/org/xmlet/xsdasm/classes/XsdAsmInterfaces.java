@@ -83,7 +83,7 @@ class XsdAsmInterfaces {
                 elementAttribute.setName(elementAttribute.getName() + ATTRIBUTE_CASE_SENSITIVE_DIFERENCE);
             }
 
-            generateMethodsAndCreateAttribute(createdAttributes, interfaceWriter, elementAttribute, elementTypeDesc, apiName);
+            generateMethodsAndCreateAttribute(createdAttributes, interfaceWriter, elementAttribute, elementTypeDesc, baseClassNameCamelCase, apiName);
         });
 
         writeClassToFile(baseClassNameCamelCase, interfaceWriter, apiName);

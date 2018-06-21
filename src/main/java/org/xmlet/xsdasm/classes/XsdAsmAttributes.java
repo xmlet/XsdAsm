@@ -25,10 +25,11 @@ class XsdAsmAttributes {
      * @param elementAttribute The attribute containing the information to create the method. (Only String fields are being supported)
      */
     @SuppressWarnings("DanglingJavadoc")
-    static void generateMethodsForAttribute(ClassWriter classWriter, XsdAttribute elementAttribute, String returnType, String apiName) {
-        String className = ATTRIBUTE_PREFIX + getCleanName(elementAttribute);
-        String camelCaseName = className.toLowerCase().charAt(0) + className.substring(1);
+    static void generateMethodsForAttribute(ClassWriter classWriter, XsdAttribute elementAttribute, String returnType, String className, String apiName) {
+        String attributeName = ATTRIBUTE_PREFIX + getCleanName(elementAttribute);
+        String camelCaseName = attributeName.toLowerCase().charAt(0) + attributeName.substring(1);
         String attributeClassType = getFullClassTypeName(getAttributeName(elementAttribute), apiName);
+        String attributeGroupInterfaceType = getFullClassTypeName(className, apiName);
         MethodVisitor mVisitor;
 
         String javaType = getFullJavaType(elementAttribute);
@@ -54,10 +55,6 @@ class XsdAsmAttributes {
          * The cast to AbstractElement is needed while writing bytecode, even though it's not needed in regular written code.
          */
 
-        if (returnType.equals(elementTypeDesc)){
-            mVisitor.visitTypeInsn(CHECKCAST, elementType);
-        }
-
         mVisitor.visitTypeInsn(NEW, attributeClassType);
         mVisitor.visitInsn(DUP);
         mVisitor.visitVarInsn(ALOAD, 1);
@@ -65,15 +62,9 @@ class XsdAsmAttributes {
         mVisitor.visitMethodInsn(INVOKESPECIAL, attributeClassType, CONSTRUCTOR, "(" + javaType + ")V", false);
 
         if (isInterfaceMethod(returnType)){
-            mVisitor.visitMethodInsn(INVOKEINTERFACE, elementType, "addAttr", "(" + attributeTypeDesc + ")" + elementTypeDesc, true);
+            mVisitor.visitMethodInsn(INVOKEINTERFACE, attributeGroupInterfaceType, "addAttr", "(" + attributeTypeDesc + ")" + elementTypeDesc, true);
         } else {
             mVisitor.visitMethodInsn(INVOKEVIRTUAL, abstractElementType, "addAttr", "(" + attributeTypeDesc + ")" + elementTypeDesc, false);
-        }
-
-        mVisitor.visitVarInsn(ALOAD, 0);
-
-        if (isInterfaceMethod(returnType)){
-            mVisitor.visitMethodInsn(INVOKEINTERFACE, elementType, "self", "()" + returnType, true);
         }
 
         mVisitor.visitInsn(ARETURN);
