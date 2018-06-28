@@ -20,6 +20,20 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.6.0</version>
                 <executions>
+                    <execution>
+                        <id>my-execution1</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.xmlet.xsdasm.main.XsdAsmMain</mainClass>
+                            <arguments>
+                                <argument>${project.basedir}\src\main\resources\test.xsd</argument>
+                                <argument>TestObjects</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                     <!--execution>
                         <id>deploy_test_results</id>
                         <phase>deploy</phase>
@@ -252,7 +266,7 @@
         <dependency>
             <groupId>com.github.xmlet</groupId>
             <artifactId>xsdParser</artifactId>
-            <version>1.0.8</version>
+            <version>1.0.9</version>
         </dependency>
     </dependencies>
 

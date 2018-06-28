@@ -70,4 +70,25 @@
         </xsd:restriction>
         <xsd:list itemType="xsd:int"/>
     </xsd:simpleType>
+
+    <!-- **************************************************************** -->
+
+    <!--xs:complexType name="RelativeLayout">
+        <xs:complexContent mixed="false">
+            <xs:extension base="ViewGroup">
+                <xs:attribute ref="android:gravity" />
+                <xs:attribute ref="android:ignoreGravity" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="ViewGroup">
+        <xs:complexContent mixed="false">
+            <xs:extension base="View">
+                <xs:attribute ref="android:addStatesFromChildren" />
+                <xs:attribute ref="android:alwaysDrawnWithCache" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType-->
+
 </xs:schema>

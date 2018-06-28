@@ -1,10 +1,8 @@
 package org.xmlet.xsdasm;
 
 import org.junit.Test;
-import org.xmlet.xsdasm.classes.XsdAsm;
 import org.xmlet.xsdasm.classes.XsdAsmUtils;
 import org.xmlet.xsdasm.main.XsdAsmMain;
-import org.xmlet.xsdparser.core.XsdParser;
 
 import java.io.File;
 import java.net.URL;

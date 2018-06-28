@@ -257,7 +257,10 @@ public class XsdAsmUtils {
      */
     static void generateMethodsAndCreateAttribute(Map<String, List<XsdAttribute>> createdAttributes, ClassWriter classWriter, XsdAttribute elementAttribute, String returnType, String className, String apiName) {
         generateMethodsForAttribute(classWriter, elementAttribute, returnType, className,apiName);
+        createAttribute(createdAttributes, elementAttribute);
+    }
 
+    static void createAttribute(Map<String, List<XsdAttribute>> createdAttributes, XsdAttribute elementAttribute) {
         if (!createdAttributes.containsKey(elementAttribute.getName())){
             List<XsdAttribute> attributes = new ArrayList<>();
 

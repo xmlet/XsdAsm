@@ -3,13 +3,11 @@ package org.xmlet.xsdasm.classes;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
-import org.xmlet.xsdparser.xsdelements.*;
+import org.xmlet.xsdparser.xsdelements.XsdAttribute;
+import org.xmlet.xsdparser.xsdelements.XsdElement;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -30,35 +28,10 @@ class XsdAsmElements {
     static void generateClassFromElement(XsdAsmInterfaces interfaceGenerator, Map<String, List<XsdAttribute>> createdAttributes, XsdElement element, String apiName) {
         String className = getCleanName(element);
 
-        XsdElement base = getBaseFromElement(element);
-
         Stream<XsdAttribute> elementAttributes = getOwnAttributes(element);
+
         String[] interfaces = interfaceGenerator.getInterfaces(element, apiName);
-
-        while (base != null) {
-            List<XsdAttribute> finalElementAttributes = elementAttributes.collect(Collectors.toList());
-            List<String> attributeNames = finalElementAttributes.stream().map(XsdAttribute::getName).collect(Collectors.toList());
-            List<XsdAttribute> moreAttributes = getOwnAttributes(base).filter(attribute -> !attributeNames.contains(attribute.getName())).collect(Collectors.toList());
-            finalElementAttributes.addAll(moreAttributes);
-            elementAttributes = finalElementAttributes.stream();
-
-            List<String> interfaceNames = Arrays.asList(interfaces);
-
-            for (String otherInterface : interfaceGenerator.getInterfaces(base, apiName)) {
-                if (!interfaceNames.contains(otherInterface)){
-                    interfaceNames.add(otherInterface);
-                }
-            }
-
-            interfaces = new String[interfaceNames.size()];
-            interfaceNames.toArray(interfaces);
-
-            base = getBaseFromElement(base);
-        }
-
         String signature = getClassSignature(interfaces, className, apiName);
-
-        // String superType = base == null ? abstractElementType : getFullClassTypeName(getCleanName(base), apiName);
         String superType = abstractElementType;
 
         ClassWriter classWriter = generateClass(className, superType, interfaces, signature,ACC_PUBLIC + ACC_SUPER, apiName);
@@ -68,24 +41,6 @@ class XsdAsmElements {
         elementAttributes.forEach(elementAttribute -> generateMethodsAndCreateAttribute(createdAttributes, classWriter, elementAttribute, getFullClassTypeNameDesc(className, apiName), className, apiName));
 
         writeClassToFile(className, classWriter, apiName);
-    }
-
-    private static XsdElement getBaseFromElement(XsdElement element) {
-        XsdComplexType complexType = element.getXsdComplexType();
-
-        if (complexType != null){
-            XsdComplexContent complexContent = complexType.getComplexContent();
-
-            if (complexContent != null){
-                XsdExtension extension = complexContent.getXsdExtension();
-
-                if (extension != null){
-                    return extension.getBase();
-                }
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -194,7 +149,6 @@ class XsdAsmElements {
         mVisitor.visitInsn(ARETURN);
         mVisitor.visitMaxs(3, 1);
         mVisitor.visitEnd();
-
     }
 
     /**
@@ -204,7 +158,21 @@ class XsdAsmElements {
      * @param classType The type of the class which contains the children elements.
      */
     static void generateMethodsForElement(ClassWriter classWriter, XsdElement child, String classType, String returnType, String apiName) {
-        generateMethodsForElement(classWriter, child.getName(), classType, returnType, apiName, new String[]{});
+        generateMethodsForElement(classWriter, child.getName(), classType, returnType, false, apiName, new String[]{});
+    }
+
+    /**
+     * Generates the methods in a given class for a given child that the class is allowed to have.
+     * @param classWriter The class writer where the method will be written.
+     * @param child The child of the element which generated the class. Their name represents a method.
+     * @param classType The type of the class which contains the children elements.
+     */
+    static void generateMethodsForElement(ClassWriter classWriter, XsdElement child, String classType, String returnType, boolean checkCast, String apiName) {
+        generateMethodsForElement(classWriter, child.getName(), classType, returnType, checkCast, apiName, new String[]{});
+    }
+
+    static void generateMethodsForElement(ClassWriter classWriter, String childName, String classType, String returnType, String apiName, String[] annotationsDesc) {
+        generateMethodsForElement(classWriter, childName, classType, returnType, false, apiName, annotationsDesc);
     }
 
     /**
@@ -213,7 +181,7 @@ class XsdAsmElements {
      * @param childName The name of the element which generated the class.
      * @param classType The type of the class which contains the children elements.
      */
-    static void generateMethodsForElement(ClassWriter classWriter, String childName, String classType, String returnType, String apiName, String[] annotationsDesc) {
+    static void generateMethodsForElement(ClassWriter classWriter, String childName, String classType, String returnType, boolean checkCast, String apiName, String[] annotationsDesc) {
         childName = firstToLower(getCleanName(childName));
         String childCamelName = toCamelCase(childName);
         String childType = getFullClassTypeName(childCamelName, apiName);
@@ -238,6 +206,10 @@ class XsdAsmElements {
             mVisitor.visitMethodInsn(INVOKEINTERFACE, classType, "addChild", "(" + elementTypeDesc + ")" + elementTypeDesc, true);
         } else {
             mVisitor.visitMethodInsn(INVOKEVIRTUAL, classType, "addChild", "(" + elementTypeDesc + ")" + elementTypeDesc, false);
+        }
+
+        if (checkCast){
+            mVisitor.visitTypeInsn(CHECKCAST, childType);
         }
 
         mVisitor.visitInsn(ARETURN);

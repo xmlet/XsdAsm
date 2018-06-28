@@ -22,6 +22,7 @@ class XsdAsmInterfaces {
     private Map<String, InterfaceInfo> createdInterfaces = new HashMap<>();
     private Map<String, XsdAbstractElement> createdElements = new HashMap<>();
     private Map<String, AttributeHierarchyItem> attributeGroupInterfaces = new HashMap<>();
+    private Map<String, ElementHierarchyItem> hierarchyInterfaces = new HashMap<>();
     private XsdAsm xsdAsmInstance;
 
     XsdAsmInterfaces(XsdAsm instance) {
@@ -38,6 +39,26 @@ class XsdAsmInterfaces {
      */
     void generateInterfaces(Map<String, List<XsdAttribute>> createdAttributes, String apiName) {
         attributeGroupInterfaces.keySet().forEach(attributeGroupInterface -> generateAttributesGroupInterface(createdAttributes, attributeGroupInterface, attributeGroupInterfaces.get(attributeGroupInterface), apiName));
+        hierarchyInterfaces.values().forEach(hierarchyInterface -> generateHierarchyAttributeInterfaces(createdAttributes, hierarchyInterface, apiName));
+    }
+
+    private void generateHierarchyAttributeInterfaces(Map<String, List<XsdAttribute>> createdAttributes, ElementHierarchyItem hierarchyInterface, String apiName) {
+        String interfaceName = hierarchyInterface.getInterfaceName();
+        List<String> extendedInterfaceList = hierarchyInterface.getInterfaces();
+        String[] extendedInterfaces = new String[extendedInterfaceList.size()];
+        extendedInterfaceList.toArray(extendedInterfaces);
+
+        if (extendedInterfaces.length == 0){
+            extendedInterfaces = new String[] {ELEMENT};
+        }
+
+        ClassWriter classWriter = generateClass(interfaceName, JAVA_OBJECT, extendedInterfaces, getInterfaceSignature(extendedInterfaces, apiName), ACC_PUBLIC + ACC_ABSTRACT + ACC_INTERFACE, apiName);
+
+        hierarchyInterface.getAttributes().forEach(attribute ->
+            generateMethodsAndCreateAttribute(createdAttributes, classWriter, attribute, elementTypeDesc, interfaceName, apiName)
+        );
+
+        writeClassToFile(interfaceName, classWriter, apiName);
     }
 
     /**
@@ -111,15 +132,85 @@ class XsdAsmInterfaces {
             }
 
             attributeGroups.addAll(getTypeAttributeGroups(complexType, extensionAttributeGroups));
-        }
 
-        if (!attributeGroups.isEmpty()){
             String[] attributeGroupsArr = new String[attributeGroups.size()];
-            attributeGroups.toArray(attributeGroupsArr);
+
+            if (!attributeGroups.isEmpty()){
+                attributeGroups.toArray(attributeGroupsArr);
+            }
+
             return attributeGroupsArr;
         }
 
         return new String[0];
+    }
+
+    private String[] getHierarchyInterfaces(XsdElement element, String apiName) {
+        List<String> interfaceNames = new ArrayList<>();
+
+        //TODO Entender porque é que às vezes aparecem UnsolvedReferences
+
+        /*
+        if (element.getName().equals("RelativeLayout")){
+            int a = 5;
+        }
+         */
+
+        XsdElement base = getBaseFromElement(element);
+        List<XsdAttribute> elementAttributes = getOwnAttributes(element).collect(Collectors.toList());
+        List<ElementHierarchyItem> hierarchyInterfaces = new ArrayList<>();
+
+        while (base != null) {
+            List<String> attributeNames = elementAttributes.stream().map(XsdAttribute::getName).collect(Collectors.toList());
+            List<XsdAttribute> moreAttributes = getOwnAttributes(base).filter(attribute -> !attributeNames.contains(attribute.getName())).collect(Collectors.toList());
+            elementAttributes.addAll(moreAttributes);
+
+            hierarchyInterfaces.add(new ElementHierarchyItem(base.getName() + "HierarchyInterface", moreAttributes, getInterfaces(base, apiName)));
+
+            base = getBaseFromElement(base);
+        }
+
+        if (!hierarchyInterfaces.isEmpty()){
+            interfaceNames.add(hierarchyInterfaces.get(0).getInterfaceName());
+
+            /*
+            for (ElementHierarchyItem item : hierarchyInterfaces) {
+                String interfaceName = item.getInterfaceName();
+
+                if (!this.hierarchyInterfaces.containsKey(interfaceName)){
+                    this.hierarchyInterfaces.put(interfaceName, item);
+                }
+            }
+            */
+
+            hierarchyInterfaces.forEach(item -> this.hierarchyInterfaces.put(item.getInterfaceName(), item));
+        }
+
+        String[] hierarchyInterfacesArr = new String[interfaceNames.size()];
+
+        if (!interfaceNames.isEmpty()){
+            interfaceNames.toArray(hierarchyInterfacesArr);
+        }
+
+        return hierarchyInterfacesArr;
+    }
+
+    private static XsdElement getBaseFromElement(XsdElement element) {
+        XsdComplexType complexType = element.getXsdComplexType();
+
+        if (complexType != null){
+            XsdComplexContent complexContent = complexType.getComplexContent();
+
+            if (complexContent != null){
+                XsdExtension extension = complexContent.getXsdExtension();
+
+                if (extension != null){
+                    return extension.getBase();
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -244,10 +335,11 @@ class XsdAsmInterfaces {
      * @return A string array with all the interface names.
      */
     String[] getInterfaces(XsdElement element, String apiName) {
-        String[] attributeGroupInterfacesArr =  getAttributeGroupInterfaces(element);
-        String[] elementGroupInterfacesArr =  getElementInterfaces(element, apiName);
+        String[] attributeGroupInterfacesArr = getAttributeGroupInterfaces(element);
+        String[] elementGroupInterfacesArr = getElementInterfaces(element, apiName);
+        String[] hierarchyInterfacesArr = getHierarchyInterfaces(element, apiName);
 
-        return ArrayUtils.addAll(attributeGroupInterfacesArr, elementGroupInterfacesArr);
+        return ArrayUtils.addAll(ArrayUtils.addAll(attributeGroupInterfacesArr, elementGroupInterfacesArr), hierarchyInterfacesArr);
     }
 
     /**
@@ -257,6 +349,18 @@ class XsdAsmInterfaces {
      */
     private String[] getElementInterfaces(XsdComplexType complexType, String apiName) {
         XsdAbstractElement child = complexType.getXsdChildElement();
+
+        if (child == null){
+            XsdComplexContent complexContent = complexType.getComplexContent();
+
+            if (complexContent != null){
+                XsdExtension extension = complexContent.getXsdExtension();
+
+                if (extension != null){
+                    child = extension.getXsdChildElement();
+                }
+            }
+        }
 
         if (child != null){
             List<InterfaceInfo> interfaceInfo = iterativeCreation(child, getCleanName((XsdElement) complexType.getParent()), 0, apiName, null);
@@ -636,7 +740,7 @@ class XsdAsmInterfaces {
         ClassWriter classWriter = generateClass(interfaceName, JAVA_OBJECT, extendedInterfacesArr, getInterfaceSignature(extendedInterfacesArr, apiName), ACC_PUBLIC + ACC_ABSTRACT + ACC_INTERFACE, apiName);
 
         directElements.forEach(child -> {
-            generateMethodsForElement(classWriter, child, getFullClassTypeName(interfaceName, apiName), elementTypeDesc, apiName);
+            generateMethodsForElement(classWriter, child, getFullClassTypeName(interfaceName, apiName), elementTypeDesc, true, apiName);
             createElement(child, apiName);
         });
 
@@ -691,7 +795,7 @@ class XsdAsmInterfaces {
         String interfaceType = getFullClassTypeName(interfaceName, apiName);
 
         directElements.forEach(child -> {
-            XsdAsmElements.generateMethodsForElement(classWriter, child, interfaceType, elementTypeDesc, apiName);
+            XsdAsmElements.generateMethodsForElement(classWriter, child, interfaceType, elementTypeDesc, true, apiName);
             createElement(child, apiName);
         });
 
