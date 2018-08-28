@@ -1,61 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xs:schema targetNamespace="http://schemas.microsoft.com/client/2007"
-           elementFormDefault="qualified"
-           xmlns="http://schemas.microsoft.com/client/2007"
-           xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
+
+    <xsd:group name="personInfoGroup">
+        <xsd:all>
+            <xsd:element name="personInfo">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="firstName" type="xsd:string"/>
+                        <xsd:element name="lastName" type="xsd:string"/>
+                        <xsd:element name="personAddress" type="xsd:string"/>
+                        <xsd:element name="city" type="xsd:string"/>
+                        <xsd:element name="country" type="xsd:string"/>
+                        <xsd:element name="phoneNumber" type="xsd:int"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:all>
+    </xsd:group>
 
     <xsd:element name="personInfoElementContainer">
         <xsd:complexType>
-            <xsd:group>
-                <xsd:all>
-                    <xs:element name="personInfo">
-                        <xs:complexType>
-                            <xs:sequence>
-                                <xs:element name="firstName" type="xs:string"/>
-                                <xs:element name="lastName" type="xs:string"/>
-                                <xs:element name="personAddress" type="xs:string"/>
-                                <xs:element name="city" type="xs:string"/>
-                                <xs:element name="country" type="xs:string"/>
-                            </xs:sequence>
-                        </xs:complexType>
-                    </xs:element>
-                </xsd:all>
-            </xsd:group>
+            <xsd:group ref="personInfoGroup" />
         </xsd:complexType>
     </xsd:element>
 
     <!-- **************************************************************** -->
 
-    <xs:element name="aName">
-        <xs:complexType>
-            <xs:group name="groupWSequence">
-                <xs:sequence>
-                    <xs:element name="elem1" type="xs:string"/>
-                    <xs:element name="elem2" type="xs:string"/>
-                </xs:sequence>
-            </xs:group>
-        </xs:complexType>
-    </xs:element>
+    <xsd:group name="groupWSequence">
+        <xsd:sequence>
+            <xsd:element name="elem1" type="xsd:string"/>
+            <xsd:element name="elem2" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:group>
+
+    <xsd:element name="aName">
+        <xsd:complexType>
+            <xsd:group ref="groupWSequence" />
+        </xsd:complexType>
+    </xsd:element>
 
     <!-- **************************************************************** -->
 
-    <xs:element name="studentGrades">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element name="firstName" type="xs:string"/>
-                <xs:element name="lastName" type="xs:string"/>
-                <xs:group>
-                    <xsd:all>
-                        <xs:element name="gradeNumeric"/>
-                        <xs:element name="gradeQualitative"/>
-                    </xsd:all>
-                </xs:group>
-            </xs:sequence>
-        </xs:complexType>
-    </xs:element>
+    <xsd:group name="studentGradesGroup">
+        <xsd:all>
+            <xsd:element name="gradeNumeric" type="xsd:int"/>
+            <xsd:element name="gradeQualitative"/>
+        </xsd:all>
+    </xsd:group>
+
+    <xsd:element name="studentGrades">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="firstName" type="xsd:string"/>
+                <xsd:element name="lastName" type="xsd:string"/>
+                <xsd:group ref="studentGradesGroup" />
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
 
     <!-- **************************************************************** -->
+
 
     <xsd:element name="intvalues">
         <xsd:complexType>
@@ -73,22 +77,58 @@
 
     <!-- **************************************************************** -->
 
-    <!--xs:complexType name="RelativeLayout">
-        <xs:complexContent mixed="false">
-            <xs:extension base="ViewGroup">
-                <xs:attribute ref="android:gravity" />
-                <xs:attribute ref="android:ignoreGravity" />
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
+    <xsd:element name="innerSequences">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:sequence>
+                    <xsd:element name="v1" type="xsd:string"/>
+                </xsd:sequence>
+                <xsd:sequence>
+                    <xsd:element name="v2" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
 
-    <xs:complexType name="ViewGroup">
-        <xs:complexContent mixed="false">
-            <xs:extension base="View">
-                <xs:attribute ref="android:addStatesFromChildren" />
-                <xs:attribute ref="android:alwaysDrawnWithCache" />
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType-->
+    <!-- **************************************************************** -->
 
-</xs:schema>
+    <xsd:element name="doubleRestricted">
+        <xsd:complexType>
+            <xsd:attribute name="contactDouble" type="IDContattoDouble"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:simpleType name="IDContattoDouble">
+        <xsd:restriction base="xsd:double">
+            <xsd:minInclusive value="999999999999"/>
+            <xsd:maxInclusive value="999999999999.9"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:element name="floatRestricted">
+        <xsd:complexType>
+            <xsd:attribute name="contactFloat" type="IDContattoFloat"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:simpleType name="IDContattoFloat">
+        <xsd:restriction base="xsd:float">
+            <xsd:minInclusive value="99999"/>
+            <xsd:maxInclusive value="99999.9"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:element name="shortRestricted">
+        <xsd:complexType>
+            <xsd:attribute name="contactShort" type="IDContattoShort"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:simpleType name="IDContattoShort">
+        <xsd:restriction base="xsd:short">
+            <xsd:minInclusive value="9998"/>
+            <xsd:maxInclusive value="10000"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+</xsd:schema>

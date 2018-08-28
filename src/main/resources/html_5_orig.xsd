@@ -24,7 +24,7 @@
         </xsd:documentation>
     </xsd:annotation>
 
-    <xsd:include schemaLocation="I18Languages.xsd" />
+    <!--xsd:include schemaLocation="I18Languages.xsd" /-->
 
     <xsd:attributeGroup name="coreServerAttributeGroup" vs:nonbrowseable="true">
         <!-- Attributes -->

@@ -1,24 +1,24 @@
-package org.xmlet.xsdasm.classes;
+package org.xmlet.xsdasm.classes.Utils;
 
 import org.xmlet.xsdparser.xsdelements.XsdAttribute;
 
 import java.util.List;
 
-class AttributeHierarchyItem {
+public class AttributeHierarchyItem {
 
     private List<String> parentName;
     private List<XsdAttribute> ownElements;
 
-    AttributeHierarchyItem(List<String> parentName, List<XsdAttribute> ownElements){
+    public AttributeHierarchyItem(List<String> parentName, List<XsdAttribute> ownElements){
         this.parentName = parentName;
         this.ownElements = ownElements;
     }
 
-    List<String> getParentsName() {
+    public List<String> getParentsName() {
         return parentName;
     }
 
-    List<XsdAttribute> getOwnElements() {
+    public List<XsdAttribute> getOwnElements() {
         return ownElements;
     }
 }

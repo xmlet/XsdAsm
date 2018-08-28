@@ -1,6 +1,8 @@
 package org.xmlet.xsdasm.classes;
 
 import org.objectweb.asm.ClassWriter;
+import org.xmlet.xsdasm.classes.Utils.InterfaceInfo;
+import org.xmlet.xsdasm.classes.Utils.InterfaceMethodInfo;
 import org.xmlet.xsdparser.xsdelements.*;
 import org.xmlet.xsdparser.xsdelements.xsdrestrictions.XsdEnumeration;
 
@@ -8,10 +10,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
@@ -163,6 +162,12 @@ public class XsdAsmUtils {
      * @return The full type of the class, e.g. Html -> XsdAsm/ParsedObjects/Html
      */
     static String getFullClassTypeName(String className, String apiName){
+        String infrastructureClass = infrastructureVars.get(className);
+
+        if (infrastructureClass != null){
+            return infrastructureClass;
+        }
+
         return getPackage(apiName) + className;
     }
 
@@ -171,7 +176,7 @@ public class XsdAsmUtils {
      * @return The full type descriptor of the class, e.g. Html -> LXsdClassGenerator/ParsedObjects/Html;
      */
     static String getFullClassTypeNameDesc(String className, String apiName){
-        return "L" + getPackage(apiName) + className + ";";
+        return "L" + getFullClassTypeName(className, apiName) + ";";
     }
 
     /**
@@ -212,7 +217,7 @@ public class XsdAsmUtils {
         return returnType.equals(elementTypeDesc);
     }
 
-    static String getFullJavaType(String itemType) {
+    static String getFullJavaTypeDesc(String itemType) {
         return xsdFullTypesToJava.getOrDefault(itemType, JAVA_OBJECT_DESC);
     }
 
@@ -221,7 +226,7 @@ public class XsdAsmUtils {
      * @param attribute The attribute from which the type will be obtained.
      * @return The java descriptor of the attribute type.
      */
-    static String getFullJavaType(XsdAttribute attribute){
+    static String getFullJavaTypeDesc(XsdAttribute attribute){
         List<XsdRestriction> restrictions = getAttributeRestrictions(attribute);
         String javaType = xsdFullTypesToJava.getOrDefault(attribute.getType(), null);
 
@@ -260,7 +265,7 @@ public class XsdAsmUtils {
         createAttribute(createdAttributes, elementAttribute);
     }
 
-    static void createAttribute(Map<String, List<XsdAttribute>> createdAttributes, XsdAttribute elementAttribute) {
+    private static void createAttribute(Map<String, List<XsdAttribute>> createdAttributes, XsdAttribute elementAttribute) {
         if (!createdAttributes.containsKey(elementAttribute.getName())){
             List<XsdAttribute> attributes = new ArrayList<>();
 
@@ -274,6 +279,72 @@ public class XsdAsmUtils {
                 attributes.add(elementAttribute);
             }
         }
+    }
+
+    static XsdExtension getXsdExtension(XsdElement element){
+        if (element != null){
+            XsdComplexType complexType = element.getXsdComplexType();
+
+            if (complexType != null) {
+                return getXsdExtension(complexType.getComplexContent());
+            }
+        }
+
+        return null;
+    }
+
+    static XsdAbstractElement getElementInterfacesElement(XsdElement element){
+        XsdAbstractElement child = null;
+
+        if (element != null){
+            XsdComplexType complexType = element.getXsdComplexType();
+
+            if (complexType != null){
+                child = complexType.getXsdChildElement();
+
+                if (child == null){
+                    XsdComplexContent complexContent = complexType.getComplexContent();
+
+                    if (complexContent != null){
+                        XsdExtension extension = complexContent.getXsdExtension();
+
+                        if (extension != null){
+                            child = extension.getXsdChildElement();
+                        }
+                    }
+                }
+            }
+        }
+
+        return child;
+    }
+
+    private static XsdExtension getXsdExtension(XsdComplexContent complexContent){
+        return complexContent != null ? complexContent.getXsdExtension(): null;
+    }
+
+    static XsdElement getBaseFromElement(XsdElement element) {
+        XsdExtension extension = getXsdExtension(element);
+
+        return extension != null ? extension.getBase(): null;
+    }
+
+    static String[] listToArray(List<String> elements, String defaultValue){
+        if (elements == null || elements.isEmpty()) return new String[]{defaultValue};
+
+        String[] elementsArr = new String[elements.size()];
+        elements.toArray(elementsArr);
+
+        return elementsArr;
+    }
+
+    static String[] listToArray(List<String> elements){
+        if (elements == null || elements.isEmpty()) return new String[]{};
+
+        String[] elementsArr = new String[elements.size()];
+        elements.toArray(elementsArr);
+
+        return elementsArr;
     }
 
     /**
@@ -378,7 +449,7 @@ public class XsdAsmUtils {
         return classWriter;
     }
 
-    static String getCleanName(XsdReferenceElement element){
+    static String getCleanName(XsdNamedElements element){
         return getCleanName(element.getName());
     }
 
@@ -392,6 +463,46 @@ public class XsdAsmUtils {
         }
 
         return result.toString();
+    }
+
+    static Set<InterfaceMethodInfo> getAmbiguousMethods(List<InterfaceInfo> interfaceInfoList) {
+        Set<InterfaceMethodInfo> ambiguousNames = new HashSet<>();
+        Set<String> dummy = new HashSet<>();
+        List<InterfaceMethodInfo> interfaceMethods = getAllInterfaceMethodInfo(interfaceInfoList);
+
+        interfaceMethods.forEach(interfaceMethod -> {
+            boolean methodNameAlreadyPresent = dummy.add(interfaceMethod.getMethodName());
+
+            if (!methodNameAlreadyPresent){
+                ambiguousNames.add(interfaceMethod);
+            }
+        });
+
+        return ambiguousNames;
+    }
+
+    private static List<InterfaceMethodInfo> getAllInterfaceMethodInfo(List<InterfaceInfo> interfaceInfoList) {
+        List<InterfaceMethodInfo> names = new ArrayList<>();
+
+        if (interfaceInfoList == null || interfaceInfoList.isEmpty()){
+            return names;
+        }
+
+        interfaceInfoList.forEach((InterfaceInfo interfaceInfo) -> {
+            if (interfaceInfo.getMethodNames() != null && !interfaceInfo.getMethodNames().isEmpty()){
+                interfaceInfo.getMethodNames().forEach(methodName ->
+                        names.add(new InterfaceMethodInfo(methodName, interfaceInfo.getInterfaceName()))
+                );
+            }
+
+            names.addAll(getAllInterfaceMethodInfo(interfaceInfo.getExtendedInterfaces()));
+        });
+
+        return names;
+    }
+
+    static String getJavaType(String xsdType){
+        return xsdFullTypesToJava.getOrDefault(xsdType, null);
     }
 }
 

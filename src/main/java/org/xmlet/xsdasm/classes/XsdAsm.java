@@ -6,6 +6,7 @@ import org.xmlet.xsdparser.xsdelements.XsdElement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.xmlet.xsdasm.classes.XsdAsmAttributes.generateAttribute;
@@ -30,10 +31,11 @@ public class XsdAsm {
 
         createSupportingInfrastructure(apiName);
 
-        elements.forEach(element -> {
-            interfaceGenerator.addCreatedElement(element);
-            generateClassFromElement(element, apiName);
-        });
+        List<XsdElement> elementList = elements.collect(Collectors.toList());
+
+        interfaceGenerator.addCreatedElements(elementList);
+
+        elementList.forEach(element -> generateClassFromElement(element, apiName));
 
         interfaceGenerator.generateInterfaces(createdAttributes, apiName);
 

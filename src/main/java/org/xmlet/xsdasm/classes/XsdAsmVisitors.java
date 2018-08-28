@@ -1,6 +1,7 @@
 package org.xmlet.xsdasm.classes;
 
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.Set;
@@ -31,23 +32,21 @@ class XsdAsmVisitors {
      * @param apiName The api this class will belong to.
      */
     private static void generateVisitorInterface(Set<String> elementNames, String apiName) {
-        ClassWriter classWriter = generateClass(VISITOR, JAVA_OBJECT, null, "<R:" + JAVA_OBJECT_DESC + ">" + JAVA_OBJECT_DESC, ACC_PUBLIC + ACC_ABSTRACT + ACC_SUPER, apiName);
+        ClassWriter classWriter = generateClass(VISITOR, JAVA_OBJECT, null, "<R:" + JAVA_OBJECT_DESC + ">" + JAVA_OBJECT_DESC, ACC_PUBLIC + ACC_ABSTRACT + ACC_INTERFACE, apiName);
 
-        MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC, CONSTRUCTOR, "()V", null, null);
-        mVisitor.visitCode();
-        mVisitor.visitVarInsn(ALOAD, 0);
-        mVisitor.visitMethodInsn(INVOKESPECIAL, JAVA_OBJECT, CONSTRUCTOR, "()V", false);
-        mVisitor.visitInsn(RETURN);
-        mVisitor.visitMaxs(1, 1);
+        MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, SHARED_VISIT_METHOD_NAME, "(" + elementTypeDesc + ")V", "<T::" + elementTypeDesc + ">(L" + elementType + "<TT;*>;)V", null);
         mVisitor.visitEnd();
 
-        mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, SHARED_VISIT_METHOD_NAME, "(" + elementTypeDesc + ")V", "<T::" + elementTypeDesc + ">(L" + elementType + "<TT;*>;)V", null);
+        mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, VISIT_METHOD_NAME, "(" + textTypeDesc + ")V", null, null);
         mVisitor.visitEnd();
 
-        elementNames.forEach(elementName -> addVisitorInterfaceMethod(classWriter, elementName, null, apiName));
+        mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, VISIT_METHOD_NAME, "(" + commentTypeDesc + ")V", null, null);
+        mVisitor.visitEnd();
 
-        addVisitorInterfaceMethod(classWriter, firstToLower(TEXT_CLASS), null, apiName);
-        addVisitorInterfaceMethod(classWriter, firstToLower(TEXT_FUNCTION_CLASS), "<U:" + JAVA_OBJECT_DESC + ">(L" + textFunctionType + "<TR;TU;*>;)V", apiName);
+        mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, VISIT_METHOD_NAME, "(" + textFunctionTypeDesc +")V", "<U:" + JAVA_OBJECT_DESC + ">(L" + textFunctionType + "<TR;TU;*>;)V", null);
+        mVisitor.visitEnd();
+
+        elementNames.forEach(elementName -> addVisitorInterfaceMethod(classWriter, elementName, apiName));
 
         writeClassToFile(VISITOR, classWriter, apiName);
     }
@@ -56,13 +55,14 @@ class XsdAsmVisitors {
      * Adds methods for each element to the visitor interface.
      * @param classWriter The Visitor interface class writer.
      * @param elementName The element for which the methods will be generated.
-     * @param signature The signature of the methods to be generated.
      * @param apiName The api name from the Visitor interface.
      */
-    private static void addVisitorInterfaceMethod(ClassWriter classWriter, String elementName, String signature, String apiName){
-        String methodTypeDesc = getFullClassTypeNameDesc(toCamelCase(elementName), apiName);
+    private static void addVisitorInterfaceMethod(ClassWriter classWriter, String elementName, String apiName){
+        String cleanElementName = toCamelCase(getCleanName(elementName));
+        String methodTypeDesc = getFullClassTypeNameDesc(cleanElementName, apiName);
 
-        MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC, VISIT_METHOD_NAME, "(" + methodTypeDesc + ")V", signature, null);
+        MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC, VISIT_METHOD_NAME, "(" + methodTypeDesc + ")V", null, null);
+        mVisitor.visitLocalVariable(firstToLower(cleanElementName), methodTypeDesc, null, new Label(), new Label(),1);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitVarInsn(ALOAD, 1);

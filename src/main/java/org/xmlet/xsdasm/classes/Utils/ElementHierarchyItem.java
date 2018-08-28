@@ -1,4 +1,4 @@
-package org.xmlet.xsdasm.classes;
+package org.xmlet.xsdasm.classes.Utils;
 
 import org.xmlet.xsdparser.xsdelements.XsdAttribute;
 
@@ -6,32 +6,32 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-class ElementHierarchyItem {
+public class ElementHierarchyItem {
 
     private String interfaceName;
     private List<XsdAttribute> attributes;
     private List<String> interfaces;
 
-    ElementHierarchyItem(String interfaceName, List<XsdAttribute> attributes, String[] extendedInterfaces){
+    public ElementHierarchyItem(String interfaceName, List<XsdAttribute> attributes, String[] extendedInterfaces){
         this.interfaceName = interfaceName;
         this.attributes = attributes;
         this.interfaces = new ArrayList<>();
         this.interfaces.addAll(Arrays.asList(extendedInterfaces));
     }
 
-    String getInterfaceName() {
+    public String getInterfaceName() {
         return interfaceName;
     }
 
-    List<XsdAttribute> getAttributes() {
+    public List<XsdAttribute> getAttributes() {
         return attributes;
     }
 
-    List<String> getInterfaces() {
+    public List<String> getInterfaces() {
         return interfaces;
     }
 
-    void addInterface(String interfaceName) {
+    public void addInterface(String interfaceName) {
         this.interfaces.add(interfaceName);
     }
 }
