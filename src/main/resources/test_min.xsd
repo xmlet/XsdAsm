@@ -131,4 +131,17 @@
         </xsd:restriction>
     </xsd:simpleType>
 
+    <xsd:element name="longRestricted">
+        <xsd:complexType>
+            <xsd:attribute name="contactLong" type="IDContattoLong"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:simpleType name="IDContattoLong">
+        <xsd:restriction base="xsd:long">
+            <xsd:minInclusive value="9998"/>
+            <xsd:maxInclusive value="10000"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
 </xsd:schema>
