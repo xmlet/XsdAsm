@@ -3,7 +3,7 @@
 
     <groupId>com.github.xmlet</groupId>
     <artifactId>xsdAsm</artifactId>
-    <version>1.0.13-SNAPSHOT</version>
+    <version>1.0.13</version>
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
@@ -214,7 +214,7 @@
         <connection>scm:git:git@github.com:xmlet/XsdAsm.git</connection>
         <developerConnection>scm:git:git@github.com:xmlet/XsdAsm.git</developerConnection>
         <url>git@github.com:xmlet/XsdAsm.git</url>
-        <tag>xsdAsm-1.0.12</tag>
+        <tag>xsdAsm-1.0.13</tag>
     </scm>
     <distributionManagement>
         <snapshotRepository>
