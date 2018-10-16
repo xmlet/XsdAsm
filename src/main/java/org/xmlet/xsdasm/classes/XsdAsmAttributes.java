@@ -3,6 +3,7 @@ package org.xmlet.xsdasm.classes;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.xmlet.xsdasm.classes.infrastructure.RestrictionValidator;
 import org.xmlet.xsdparser.xsdelements.XsdAttribute;
 import org.xmlet.xsdparser.xsdelements.XsdList;
 import org.xmlet.xsdparser.xsdelements.XsdRestriction;
@@ -18,8 +19,15 @@ import static org.xmlet.xsdasm.classes.XsdAsmEnum.*;
 import static org.xmlet.xsdasm.classes.XsdAsmUtils.*;
 import static org.xmlet.xsdasm.classes.XsdSupportingStructure.*;
 
+/**
+ * This class is responsible to generate all the code that is attribute related.
+ */
 class XsdAsmAttributes {
 
+    /**
+     * Helper {@link Map} used to apply casts to different data types received in the constructor of the generated
+     * attribute classes
+     */
     private static Map<String, Consumer<MethodVisitor>> adjustmentsMapper;
 
     static{
@@ -34,9 +42,14 @@ class XsdAsmAttributes {
     private XsdAsmAttributes(){}
 
     /**
-     * Generates a method to add a given attribute.
-     * @param classWriter The class where the fields will be added.
-     * @param elementAttribute The attribute containing the information to create the method. (Only String fields are being supported)
+     * Generates a method to add a given {@link XsdAttribute}.
+     * @param classWriter The {@link ClassWriter} of the class where the method that adds the {@link XsdAttribute} will
+     *                    be generated.
+     * @param elementAttribute The {@link XsdAttribute} containing the information to create the method.
+     * @param returnType The return type of the generated method. This return type is different based on if the class
+     *                   where the method is being generated is a class or an interface.
+     * @param className The name of the class where the method is being added.
+     * @param apiName The name of the generated fluent interface.
      */
     static void generateMethodsForAttribute(ClassWriter classWriter, XsdAttribute elementAttribute, String returnType, String className, String apiName) {
         String attributeName = ATTRIBUTE_PREFIX + getCleanName(elementAttribute);
@@ -80,9 +93,9 @@ class XsdAsmAttributes {
     }
 
     /**
-     * Creates a class which represents an attribute.
-     * @param attribute The XsdAttribute type that contains the required information.
-     * @param apiName The api this class will belong.
+     * Creates a class which represents a {@link XsdAttribute} object.
+     * @param attribute The {@link XsdAttribute} type that contains the required information.
+     * @param apiName The name of the generated fluent interface.
      */
     static void generateAttribute(XsdAttribute attribute, String apiName){
         String camelAttributeName = getAttributeName(attribute);
@@ -99,7 +112,7 @@ class XsdAsmAttributes {
 
         ClassWriter attributeWriter = generateClass(camelAttributeName, baseAttributeType, null, "L" + baseAttributeType + "<" + javaTypeDesc + ">;", ACC_PUBLIC + ACC_SUPER, apiName);
 
-        String constructorArgDesc = hasEnum ? getFullClassTypeNameDesc(getEnumName(attribute), apiName) : (list != null ? JAVA_LIST_DESC : javaTypeDesc);
+        String constructorArgDesc = getConstructorArgDesc(attribute, hasEnum, list, javaTypeDesc, apiName);
 
         MethodVisitor mVisitor = attributeWriter.visitMethod(ACC_PUBLIC, CONSTRUCTOR, "(" + constructorArgDesc + ")V",  null, null);
         mVisitor.visitLocalVariable("attrValue", constructorArgDesc, null, new Label(), new Label(),1);
@@ -134,10 +147,24 @@ class XsdAsmAttributes {
         writeClassToFile(camelAttributeName, attributeWriter, apiName);
     }
 
+    private static String getConstructorArgDesc(XsdAttribute attribute, boolean hasEnum, XsdList list, String javaTypeDesc, String apiName) {
+        if (hasEnum){
+            return getFullClassTypeNameDesc(getEnumName(attribute), apiName);
+        } else {
+            if (list != null) {
+                return JAVA_LIST_DESC;
+            } else {
+                return javaTypeDesc;
+            }
+        }
+    }
+
     /**
-     * Loads the XsdRestriction object information to the static constructor.
-     * @param mVisitor The static constructor method visitor.
-     * @param restriction The current restriction to add.
+     * Uses the information present in the {@link XsdRestriction} object and hardcodes the restriction values in
+     * method calls to the {@link RestrictionValidator} validator methods.
+     * @param mVisitor The constructor method visitor.
+     * @param restriction The current restriction.
+     * @param javaType The java type of the type received in the constructor method.
      * @param index The current index of the stack.
      */
     private static void loadRestrictionToAttribute(MethodVisitor mVisitor, XsdRestriction restriction, String javaType, int index) {
@@ -153,19 +180,19 @@ class XsdAsmAttributes {
         XsdTotalDigits totalDigits = restriction.getTotalDigits();
 
         if (length != null){
-            mVisitor.visitIntInsn(BIPUSH, (int) length.getValue());
+            mVisitor.visitIntInsn(BIPUSH, length.getValue());
             mVisitor.visitVarInsn(ALOAD, index);
             mVisitor.visitMethodInsn(INVOKESTATIC, restrictionValidatorType, "validateLength", "(I" + javaType + ")V", false);
         }
 
         if (maxLength != null){
-            mVisitor.visitLdcInsn((int) maxLength.getValue());
+            mVisitor.visitLdcInsn(maxLength.getValue());
             mVisitor.visitVarInsn(ALOAD, index);
             mVisitor.visitMethodInsn(INVOKESTATIC, restrictionValidatorType, "validateMaxLength", "(I" + javaType + ")V", false);
         }
 
         if (minLength != null){
-            mVisitor.visitLdcInsn((int) minLength.getValue());
+            mVisitor.visitLdcInsn(minLength.getValue());
             mVisitor.visitVarInsn(ALOAD, index);
             mVisitor.visitMethodInsn(INVOKESTATIC, restrictionValidatorType, "validateMinLength", "(I" + javaType + ")V", false);
         }
@@ -199,14 +226,14 @@ class XsdAsmAttributes {
         }
 
         if (fractionDigits != null){
-            mVisitor.visitIntInsn(BIPUSH, (int) fractionDigits.getValue());
+            mVisitor.visitIntInsn(BIPUSH, fractionDigits.getValue());
             mVisitor.visitVarInsn(ALOAD, index);
             numericAdjustment(mVisitor, javaType);
             mVisitor.visitMethodInsn(INVOKESTATIC, restrictionValidatorType, "validateFractionDigits", "(ID)V", false);
         }
 
         if (totalDigits != null){
-            mVisitor.visitIntInsn(BIPUSH, (int) totalDigits.getValue());
+            mVisitor.visitIntInsn(BIPUSH, totalDigits.getValue());
             mVisitor.visitVarInsn(ALOAD, index);
             numericAdjustment(mVisitor, javaType);
             mVisitor.visitMethodInsn(INVOKESTATIC, restrictionValidatorType, "validateTotalDigits", "(ID)V", false);
@@ -219,6 +246,11 @@ class XsdAsmAttributes {
         }
     }
 
+    /**
+     * Applies a cast to numeric types, i.e. int, short, long, to double.
+     * @param mVisitor The visitor of the attribute constructor.
+     * @param javaType The type of the argument received in the constructor.
+     */
     private static void numericAdjustment(MethodVisitor mVisitor, String javaType) {
         adjustmentsMapper.getOrDefault(javaType, XsdAsmAttributes::doubleAdjustment).accept(mVisitor);
     }
@@ -243,6 +275,12 @@ class XsdAsmAttributes {
         mVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Double", "doubleValue", "()D", false);
     }
 
+    /**
+     * Asserts if the received {@link XsdAttribute} object has restrictions. Enumeration restrictions are discarded
+     * since they are already validated by the usage of {@link Enum} classses.
+     * @param attribute The {@link XsdAttribute} object.
+     * @return Whether the received attribute has restrictions other than {@link XsdEnumeration}.
+     */
     private static boolean attributeHasRestrictions(XsdAttribute attribute){
         List<XsdRestriction> restrictions = getAttributeRestrictions(attribute);
 
@@ -254,6 +292,11 @@ class XsdAsmAttributes {
         return restrictions.stream().anyMatch(XsdAsmAttributes::hasRestrictionsOtherThanEnumeration);
     }
 
+    /**
+     * Checks if any type other than Enumeration is present in the {@link XsdRestriction} object.
+     * @param restriction The {@link XsdRestriction} object.
+     * @return Whether the received attribute has restrictions other than {@link XsdEnumeration}.
+     */
     private static boolean hasRestrictionsOtherThanEnumeration(XsdRestriction restriction){
         return restriction.getMinExclusive() != null || restriction.getMinInclusive() != null ||
                 restriction.getMaxExclusive() != null || restriction.getMaxInclusive() != null ||
@@ -263,9 +306,13 @@ class XsdAsmAttributes {
     }
 
     /**
-     * AttrType (Object/String/Integer)
-     * AttrTypeContentType(EnumTypeContentType) NAMED
-     * AttrTypeStyle(EnumTypeStyle)             NO NAME
+     * Obtains the attribute name.
+     * Example:
+     *      AttrTypeInteger (Object/String/Integer)
+     *      AttrTypeEnumTypeContentType(EnumTypeContentType)
+     *      AttrTypeEnumTypeStyle(EnumTypeStyle)
+     * @param attribute The {@link XsdAttribute} object.
+     * @return The name of the class based on this {@link XsdAttribute} object.
      */
     private static String getAttributeName(XsdAttribute attribute) {
         String name = ATTRIBUTE_PREFIX + getCleanName(attribute);
@@ -279,10 +326,20 @@ class XsdAsmAttributes {
         return name + javaType.substring(javaType.lastIndexOf('/') + 1, javaType.length() - 1);
     }
 
+    /**
+     * Returns the {@link XsdList} of the {@link XsdAttribute} object.
+     * @param attribute The {@link XsdAttribute} object.
+     * @return The contained {@link XsdList} object or null if not present.
+     */
     private static XsdList getAttributeList(XsdAttribute attribute) {
         return attribute.getXsdSimpleType() != null ? attribute.getXsdSimpleType().getList() : null;
     }
 
+    /**
+     * @param attribute The received {@link XsdAttribute} object.
+     * @return The java type of the elements of the {@link Enum} generated based on the possible values for the received
+     * {@link XsdAttribute} object.
+     */
     private static String getEnumContainingType(XsdAttribute attribute){
         if (attributeHasEnum(attribute)){
             List<XsdRestriction> restrictions = getAttributeRestrictions(attribute);

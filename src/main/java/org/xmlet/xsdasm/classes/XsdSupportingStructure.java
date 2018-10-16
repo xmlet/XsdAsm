@@ -1,13 +1,19 @@
 package org.xmlet.xsdasm.classes;
 
 import org.objectweb.asm.*;
+import org.xmlet.xsdasm.classes.infrastructure.EnumInterface;
+import org.xmlet.xsdasm.classes.infrastructure.RestrictionValidator;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
 import static org.xmlet.xsdasm.classes.XsdAsmUtils.*;
 
+/**
+ * This class is responsible for creating some infrastructure classes that can't be reused.
+ */
 class XsdSupportingStructure {
 
     static final String JAVA_OBJECT = "java/lang/Object";
@@ -32,25 +38,100 @@ class XsdSupportingStructure {
     static final String ENUM_INTERFACE = "EnumInterface";
     static final String ATTRIBUTE_PREFIX = "Attr";
 
+    /**
+     * Type name for the Text class.
+     */
     private static String textType;
+
+    /**
+     * Type descriptor for the Text class.
+     */
     static String textTypeDesc;
+
+    /**
+     * Type name for the Comment class.
+     */
     private static String commentType;
+
+    /**
+     * Type descriptor for the Comment class.
+     */
     static String commentTypeDesc;
+
+    /**
+     * Type name for the TextFunction class.
+     */
     static String textFunctionType;
+
+    /**
+     * Type descriptor for the TextFunction class.
+     */
     static String textFunctionTypeDesc;
+
+    /**
+     * Type name for the AbstractElement class.
+     */
     static String abstractElementType;
+
+    /**
+     * Type descriptor for the AbstractElement class.
+     */
     static String abstractElementTypeDesc;
+
+    /**
+     * Type name for the BaseAttribute class.
+     */
     static String baseAttributeType;
+
+    /**
+     * Type name for the Element interface.
+     */
     static String elementType;
+
+    /**
+     * Type descriptor for the Element interface.
+     */
     static String elementTypeDesc;
+
+    /**
+     * Type name for the Attribute interface.
+     */
     private static String attributeType;
+
+    /**
+     * Type descriptor for the Attribute interface.
+     */
     static String attributeTypeDesc;
+
+    /**
+     * Type name for the TextGroup interface.
+     */
     private static String textGroupType;
+
+    /**
+     * Type name for the {@link RestrictionValidator} class present in the infrastructure package of this solution.
+     */
     static String restrictionValidatorType = "org/xmlet/xsdasm/classes/infrastructure/RestrictionValidator";
+
+    /**
+     * Type name for the ElementVisitor abstract class.
+     */
     static String elementVisitorType;
+
+    /**
+     * Type descriptor for the ElementVisitor abstract class.
+     */
     static String elementVisitorTypeDesc;
+
+    /**
+     * Type name for the {@link EnumInterface} interface present in the infrastructure package of this solution.
+     */
     static String enumInterfaceType = "org/xmlet/xsdasm/classes/infrastructure/EnumInterface";
 
+    /**
+     * A {@link Map} object with information regarding types that are present in the infrastructure package of this
+     * solution. Their name resolution differs from all the remaining classes since their name is already defined.
+     */
     static Map<String, String> infrastructureVars;
 
     static {
@@ -102,7 +183,7 @@ class XsdSupportingStructure {
 
     /**
      * Generates the Element interface.
-     * @param apiName The api this class will belong.
+     * @param apiName The name of the generated fluent interface.
      */
     private static void createElementInterface(String apiName){
         ClassWriter classWriter = generateClass(ELEMENT, JAVA_OBJECT, null, "<T::" + elementTypeDesc + "Z::" + elementTypeDesc + ">" + JAVA_OBJECT_DESC, ACC_PUBLIC + ACC_ABSTRACT + ACC_INTERFACE, apiName);
@@ -134,7 +215,7 @@ class XsdSupportingStructure {
         mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, "find", "(Ljava/util/function/Predicate;)Ljava/util/stream/Stream;", "<R::" + elementTypeDesc + ">(Ljava/util/function/Predicate<" + elementTypeDesc + ">;)Ljava/util/stream/Stream<TR;>;", null);
         mVisitor.visitEnd();
 
-        mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, "º", "()" + elementTypeDesc, "()TZ;", null);
+        mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, "__", "()" + elementTypeDesc, "()TZ;", null);
         mVisitor.visitEnd();
 
         mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, "binder", "(Ljava/util/function/BiConsumer;)" + elementTypeDesc, "<M:" + JAVA_OBJECT_DESC + ">(Ljava/util/function/BiConsumer<TT;TM;>;)TT;", null);
@@ -155,8 +236,8 @@ class XsdSupportingStructure {
     }
 
     /**
-     * Generates the IAttribute interface.
-     * @param apiName The api this class will belong.
+     * Generates the Attribute interface.
+     * @param apiName The name of the generated fluent interface.
      */
     private static void createAttributeInterface(String apiName){
         ClassWriter classWriter = generateClass(ATTRIBUTE, JAVA_OBJECT, null, "<T:" + JAVA_OBJECT_DESC + ">" + JAVA_OBJECT_DESC, ACC_PUBLIC + ACC_ABSTRACT + ACC_INTERFACE, apiName);
@@ -171,8 +252,8 @@ class XsdSupportingStructure {
     }
 
     /**
-     * Creates the text interface, allowing elements to have a text child node.
-     * @param apiName The api this class will belong.
+     * Creates the TextGroup interface, allowing elements to have a text child node.
+     * @param apiName The name of the generated fluent interface.
      */
     private static void createTextGroupInterface(String apiName) {
         ClassWriter classWriter = generateClass(TEXT_GROUP, JAVA_OBJECT, new String[] {ELEMENT}, "<T::" + elementTypeDesc + "Z::" + elementTypeDesc + ">" + JAVA_OBJECT_DESC + "L" + elementType + "<TT;TZ;>;", ACC_PUBLIC + ACC_ABSTRACT + ACC_INTERFACE, apiName);
@@ -235,16 +316,27 @@ class XsdSupportingStructure {
 
     /**
      * Creates the Text class.
-     * @param apiName The api this class will belong.
+     * @param apiName The name of the generated fluent interface.
      */
     private static void createTextElement(String apiName) {
         createTextClass(TEXT_CLASS, textType, textTypeDesc, apiName);
     }
 
+    /**
+     * Creates the Comment class.
+     * @param apiName The name of the generated fluent interface.
+     */
     private static void createCommentElement(String apiName) {
         createTextClass(COMMENT_CLASS, commentType, commentTypeDesc, apiName);
     }
 
+    /**
+     * Creates textual classes, such as Text or Comment.
+     * @param className The class name, either {#link {@link XsdSupportingStructure#COMMENT_CLASS}} or {#link {@link XsdSupportingStructure#TEXT_CLASS}}.
+     * @param classType The class type, either {#link {@link XsdSupportingStructure#commentType}} or {#link {@link XsdSupportingStructure#textType}}.
+     * @param classTypeDesc The class type descriptor, either {#link {@link XsdSupportingStructure#commentTypeDesc}} or {#link {@link XsdSupportingStructure#textTypeDesc}}.
+     * @param apiName The name of the generated fluent interface.
+     */
     private static void createTextClass(String className, String classType, String classTypeDesc, String apiName){
         ClassWriter classWriter = generateClass(className, abstractElementType, null,  "<Z::" + elementTypeDesc + ">L"  + abstractElementType +"<L" + classType + "<TZ;>;TZ;>;",ACC_PUBLIC + ACC_SUPER, apiName);
 
@@ -362,6 +454,10 @@ class XsdSupportingStructure {
         writeClassToFile(className, classWriter, apiName);
     }
 
+    /**
+     * Creates the TextFunction class.
+     * @param apiName The name of the generated fluent interface.
+     */
     private static void createTextFunctionElement(String apiName) {
         ClassWriter classWriter = generateClass(TEXT_FUNCTION_CLASS, abstractElementType, null,  "<R:" + JAVA_OBJECT_DESC + "U:" + JAVA_OBJECT_DESC + "Z::" + elementTypeDesc + ">L" + abstractElementType + "<L" + textFunctionType + "<TR;TU;TZ;>;TZ;>;",ACC_PUBLIC + ACC_SUPER, apiName);
 
@@ -499,6 +595,7 @@ class XsdSupportingStructure {
 
     /**
      * Generates the AbstractElement class with all the implementations.
+     * @param apiName The name of the generated fluent interface.
      */
     private static void createAbstractElement(String apiName){
         ClassWriter classWriter = generateClass(ABSTRACT_ELEMENT, JAVA_OBJECT, new String[] {ELEMENT}, "<T::" + elementTypeDesc + "Z::" + elementTypeDesc + ">" + JAVA_OBJECT_DESC + "L" + elementType + "<TT;TZ;>;",ACC_PUBLIC + ACC_SUPER + ACC_ABSTRACT, apiName);
@@ -581,7 +678,7 @@ class XsdSupportingStructure {
         mVisitor.visitMaxs(1, 1);
         mVisitor.visitEnd();
 
-        mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_FINAL, "º", "()" + elementTypeDesc, "()TZ;", null);
+        mVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_FINAL, "__", "()" + elementTypeDesc, "()TZ;", null);
         mVisitor.visitCode();
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitFieldInsn(GETFIELD, abstractElementType, "parent", elementTypeDesc);
@@ -772,6 +869,11 @@ class XsdSupportingStructure {
         writeClassToFile(ABSTRACT_ELEMENT, classWriter, apiName);
     }
 
+    /**
+     * Helper method which defines code to clone a {@link List} object.
+     * @param mVisitor The {@link MethodVisitor} for the current method.
+     * @param listName The name of the {@link List} object to clone.
+     */
     private static void cloneList(MethodVisitor mVisitor, String listName) {
         mVisitor.visitVarInsn(ALOAD, 1);
         mVisitor.visitTypeInsn(NEW, "java/util/ArrayList");
@@ -782,6 +884,10 @@ class XsdSupportingStructure {
         mVisitor.visitFieldInsn(PUTFIELD, abstractElementType, listName, JAVA_LIST_DESC);
     }
 
+    /**
+     * Code shared by all constructors of the AbstractElement class.
+     * @param mVisitor The {@link MethodVisitor} of the constructor.
+     */
     private static void abstractElementConstructorBase(MethodVisitor mVisitor){
         mVisitor.visitVarInsn(ALOAD, 0);
         mVisitor.visitMethodInsn(INVOKESPECIAL, JAVA_OBJECT, CONSTRUCTOR, "()V", false);
@@ -798,8 +904,8 @@ class XsdSupportingStructure {
     }
 
     /**
-     * Creates a abstract class for all concrete attributes, containing it's value.
-     * @param apiName The api this class will belong.
+     * Creates a abstract class for all concrete attributes, containing its value.
+     * @param apiName The name of the generated fluent interface.
      */
     private static void createAttributeBase(String apiName) {
         ClassWriter classWriter = generateClass(BASE_ATTRIBUTE, JAVA_OBJECT, new String[] {ATTRIBUTE}, "<T:" + JAVA_OBJECT_DESC + ">" + JAVA_OBJECT_DESC + "L" + attributeType + "<TT;>;", ACC_PUBLIC + ACC_SUPER, apiName);

@@ -10,6 +10,9 @@ import static org.objectweb.asm.Opcodes.*;
 import static org.xmlet.xsdasm.classes.XsdAsmUtils.*;
 import static org.xmlet.xsdasm.classes.XsdSupportingStructure.*;
 
+/**
+ * This class has the responsibility of creating the ElementVisitor class.
+ */
 class XsdAsmVisitors {
 
     private static final String VISIT_METHOD_NAME = "visit";
@@ -18,18 +21,25 @@ class XsdAsmVisitors {
     private XsdAsmVisitors(){}
 
     /**
-     * Generates both the visitor interface and abstract visitor with method for each element from the list.
+     * Generates both the abstract visitor class with methods for each element from the list.
      * @param elementNames The elements names list.
-     * @param apiName The api this classes will belong to.
+     * @param apiName The name of the generated fluent interface.
      */
     static void generateVisitors(Set<String> elementNames, String apiName){
         generateVisitorInterface(elementNames, apiName);
     }
 
     /**
-     * Generates the visitor class for this api with methods for all elements in the element list.
+     * Generates the visitor class for this fluent interface with methods for all elements in the element list.
+     *
+     * Main methods:
+     *  void <T extends Element> void sharedVisit(Element<T, ?> elem);
+     *  void visitAttribute(String attributeName, String attributeValue);
+     *  void visit(Text elem);
+     *  void visit(Comment elem);
+     *  <U> void visit(TextFunction<R, U, ?> elem);
      * @param elementNames The elements names list.
-     * @param apiName The api this class will belong to.
+     * @param apiName The name of the generated fluent interface.
      */
     private static void generateVisitorInterface(Set<String> elementNames, String apiName) {
         ClassWriter classWriter = generateClass(VISITOR, JAVA_OBJECT, null, "<R:" + JAVA_OBJECT_DESC + ">" + JAVA_OBJECT_DESC, ACC_PUBLIC + ACC_ABSTRACT + ACC_SUPER, apiName);
@@ -60,13 +70,17 @@ class XsdAsmVisitors {
     }
 
     /**
-     * Adds methods for each element to the visitor interface.
-     * @param classWriter The Visitor interface class writer.
-     * @param elementName The element for which the methods will be generated.
-     * @param apiName The api name from the Visitor interface.
+     * Adds a specific method for a visit call.
+     * Example:
+     *  void visit(Html elem){
+     *      sharedVisit(elem);
+     *  }
+     * @param classWriter The ElementVisitor class {@link ClassWriter}.
+     * @param elementName The specific element.
+     * @param apiName The name of the generated fluent interface.
      */
     private static void addVisitorInterfaceMethod(ClassWriter classWriter, String elementName, String apiName){
-        String cleanElementName = toCamelCase(getCleanName(elementName));
+        String cleanElementName = firstToUpper(getCleanName(elementName));
         String methodTypeDesc = getFullClassTypeNameDesc(cleanElementName, apiName);
 
         MethodVisitor mVisitor = classWriter.visitMethod(ACC_PUBLIC, VISIT_METHOD_NAME, "(" + methodTypeDesc + ")V", null, null);

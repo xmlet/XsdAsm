@@ -3,6 +3,7 @@ package org.xmlet.xsdasm.classes;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdAttribute;
 import org.xmlet.xsdparser.xsdelements.XsdElement;
 
@@ -13,16 +14,20 @@ import static org.objectweb.asm.Opcodes.*;
 import static org.xmlet.xsdasm.classes.XsdAsmUtils.*;
 import static org.xmlet.xsdasm.classes.XsdSupportingStructure.*;
 
+/**
+ * This class is responsible to generate all the code that is element related.
+ */
 class XsdAsmElements {
 
     private XsdAsmElements(){}
 
     /**
-     * Generates a class from a given XsdElement. It also generated its constructors and methods.
-     * @param interfaceGenerator An instance of XsdAsmInterfaces which contains interface information.
-     * @param createdAttributes A list of names of attribute classes already created.
-     * @param element The element from which the class will be generated.
-     * @param apiName The api this class will belong.
+     * Generates a class based on the information present in a {@link XsdElement} object. It also generated its
+     * constructors and required methods.
+     * @param interfaceGenerator An instance of {@link XsdAsmInterfaces} which contains interface information.
+     * @param createdAttributes Information regarding attribute classes that were already created.
+     * @param element The {@link XsdElement} object from which the class will be generated.
+     * @param apiName The name of the generated fluent interface.
      */
     static void generateClassFromElement(XsdAsmInterfaces interfaceGenerator, Map<String, List<XsdAttribute>> createdAttributes, XsdElement element, String apiName) {
         String className = getCleanName(element);
@@ -41,24 +46,30 @@ class XsdAsmElements {
     }
 
     /**
-     * Creates some class specific methods that all implementations of AbstractElement should have, which are:
-     * A constructor with a String parameter, which is it will create a Text attribute in the created element.
-     * A constructor with two String parameters, the first being the value of the Text attribute, and the second being a value for its id.
-     * An implementation of the self method, which should return this.
-     * @param classWriter The class writer on which should be written the methods.
+     * Creates some class specific methods that all implementations of {@link XsdAbstractElement} should have, which are:
+     *  Constructor(String name)                    - Receives the name of the element.
+     *  Constructor(Element parent)                 - Receives the parent of the element, uses the default element name.
+     *  Constructor(Element parent, String name)    - Receives the parent of the element and the name of the current element.
+     *  self()                                      - Returns this;
+     *  accept(ElementVisitor visitor)              - Receives the visitor and invokes the respective method with the current instance.
+     * @param classWriter The {@link ClassWriter} on which the methods should be written.
      * @param className The class name.
+     * @param apiName The name of the generated fluent interface.
      */
     private static void generateClassSpecificMethods(ClassWriter classWriter, String className, String apiName) {
         generateClassSpecificMethods(classWriter, className, className, apiName);
     }
 
     /**
-     * Creates some class specific methods that all implementations of AbstractElement should have, which are:
-     * A constructor with a String parameter, which is it will create a Text attribute in the created element.
-     * A constructor with two String parameters, the first being the value of the Text attribute, and the second being a value for its id.
-     * An implementation of the self method, which should return this.
-     * @param classWriter The class writer on which should be written the methods.
+     * Creates some class specific methods that all implementations of {@link XsdAbstractElement} should have, which are:
+     *  Constructor(String name)                    - Receives the name of the element.
+     *  Constructor(Element parent)                 - Receives the parent of the element, uses the default element name.
+     *  Constructor(Element parent, String name)    - Receives the parent of the element and the name of the current element.
+     *  self()                                      - Returns this;
+     *  accept(ElementVisitor visitor)              - Receives the visitor and invokes the respective method with the current instance.
+     * @param classWriter The {@link ClassWriter} on which the methods should be written.
      * @param className The class name.
+     * @param apiName The name of the generated fluent interface.
      */
     static void generateClassSpecificMethods(ClassWriter classWriter, String typeName, String className, String apiName) {
         String classType = getFullClassTypeName(typeName, apiName);
@@ -155,9 +166,10 @@ class XsdAsmElements {
 
     /**
      * Generates the methods in a given class for a given child that the class is allowed to have.
-     * @param classWriter The class writer where the method will be written.
+     * @param classWriter The {@link ClassWriter} where the method will be written.
      * @param child The child of the element which generated the class. Their name represents a method.
      * @param classType The type of the class which contains the children elements.
+     * @param apiName The name of the generated fluent interface.
      */
     static void generateMethodsForElement(ClassWriter classWriter, XsdElement child, String classType, String returnType, String apiName) {
         generateMethodsForElement(classWriter, child.getName(), classType, returnType, false, apiName, new String[]{});
@@ -165,27 +177,42 @@ class XsdAsmElements {
 
     /**
      * Generates the methods in a given class for a given child that the class is allowed to have.
-     * @param classWriter The class writer where the method will be written.
+     * @param classWriter The {@link ClassWriter} where the method will be written.
      * @param child The child of the element which generated the class. Their name represents a method.
      * @param classType The type of the class which contains the children elements.
+     * @param returnType The return type of the generated method.
+     * @param apiName The name of the generated fluent interface.
      */
     static void generateMethodsForElement(ClassWriter classWriter, XsdElement child, String classType, String returnType, boolean checkCast, String apiName) {
         generateMethodsForElement(classWriter, child.getName(), classType, returnType, checkCast, apiName, new String[]{});
     }
 
+    /**
+     * Generates the methods in a given class for a given child that the class is allowed to have.
+     * @param classWriter The {@link ClassWriter} where the method will be written.
+     * @param childName The child name that represents a method.
+     * @param classType The type of the class which contains the children elements.
+     * @param returnType The return type of the generated method.
+     * @param apiName The name of the generated fluent interface.
+     * @param annotationsDesc An array with annotation names to apply to the generated method.
+     */
     static void generateMethodsForElement(ClassWriter classWriter, String childName, String classType, String returnType, String apiName, String[] annotationsDesc) {
         generateMethodsForElement(classWriter, childName, classType, returnType, false, apiName, annotationsDesc);
     }
 
     /**
      * Generates the methods in a given class for a given child that the class is allowed to have.
-     * @param classWriter The class writer where the method will be written.
-     * @param childName The name of the element which generated the class.
+     * @param classWriter The {@link ClassWriter} where the method will be written.
+     * @param childName The child name that represents a method.
      * @param classType The type of the class which contains the children elements.
+     * @param returnType The return type of the generated method.
+     * @param checkCast If the method should cast the resulting object when returning.
+     * @param apiName The name of the generated fluent interface.
+     * @param annotationsDesc An array with annotation names to apply to the generated method.
      */
     static void generateMethodsForElement(ClassWriter classWriter, String childName, String classType, String returnType, boolean checkCast, String apiName, String[] annotationsDesc) {
         childName = firstToLower(getCleanName(childName));
-        String childCamelName = toCamelCase(childName);
+        String childCamelName = firstToUpper(childName);
         String childType = getFullClassTypeName(childCamelName, apiName);
         String childTypeDesc = getFullClassTypeNameDesc(childCamelName, apiName);
         boolean isInterface = isInterfaceMethod(returnType);

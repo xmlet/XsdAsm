@@ -4,6 +4,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
+import org.xmlet.xsdasm.classes.utils.AsmException;
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdAttribute;
 import org.xmlet.xsdparser.xsdelements.XsdElement;
@@ -12,16 +13,25 @@ import org.xmlet.xsdparser.xsdelements.xsdrestrictions.XsdEnumeration;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.logging.Level;
 
 import static org.objectweb.asm.Opcodes.*;
 import static org.xmlet.xsdasm.classes.XsdAsmUtils.*;
 import static org.xmlet.xsdasm.classes.XsdSupportingStructure.*;
 
+/**
+ * This class is responsible to generate all the code that is {@link Enum} related.
+ */
 class XsdAsmEnum {
 
     private XsdAsmEnum(){}
 
+    /**
+     * Creates an {@link Enum} class based on the information received.
+     * @param attribute The {@link XsdAttribute} that has the restrictions that are used to create the {@link Enum} class.
+     * @param enumerations The {@link List} of {@link XsdEnumeration} that contains all the values that will be used in
+     *                     the generated {@link Enum} class.
+     * @param apiName The name of the generated fluent interface.
+     */
     static void createEnum(XsdAttribute attribute, List<XsdEnumeration> enumerations, String apiName){
         String enumName = getEnumName(attribute);
         String enumType = getFullClassTypeName(enumName, apiName);
@@ -108,10 +118,8 @@ class XsdAsmEnum {
 
             try {
                 object = Class.forName(fullJavaType.replaceAll("/", ".")).getConstructor(String.class).newInstance(enumElem.getValue());
-            } catch (ClassNotFoundException e){
-                System.exit(-1);
-            } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
-                XsdLogger.getLogger().log(Level.SEVERE, "", e);
+            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
+                throw new AsmException("Exception when creating Enum classes.", e);
             }
 
             staticConstructor.visitLdcInsn(object);
@@ -142,6 +150,11 @@ class XsdAsmEnum {
         writeClassToFile(enumName, cw, apiName);
     }
 
+    /**
+     * Asserts if the received {@link XsdAttribute} has an associated {@link Enum} class.
+     * @param attribute The {@link XsdAttribute} object.
+     * @return Whether the received {@link XsdAttribute} has an associated {@link Enum} or not.
+     */
     static boolean attributeHasEnum(XsdAttribute attribute) {
         List<XsdRestriction> restrictions = getAttributeRestrictions(attribute);
 
@@ -149,21 +162,25 @@ class XsdAsmEnum {
     }
 
     /**
-     * AttrTypeContentType(EnumTypeContentType) NAMED
-     * AttrTypeStyle(EnumTypeStyle)             NO NAME
+     * Obtains the name of the {@link Enum} associated with the received {@link XsdAttribute}.
+     * Example:
+     *  AttrTypeEnumTypeContentType(EnumTypeContentType) NAMED
+     *  AttrTypeEnumTypeStyle(EnumTypeStyle)             NO NAME
+     * @param attribute The {@link XsdAttribute} that serves as a based for the name;
+     * @return The name of the {@link Enum} class associated with the received {@link XsdAttribute}.
      */
     static String getEnumName(XsdAttribute attribute) {
         String enumPrefix = "Enum";
 
         if (attribute.getType() != null){
-            return enumPrefix + getCleanName(attribute) + toCamelCase(attribute.getType().replaceAll("[^a-zA-Z0-9]", ""));
+            return enumPrefix + getCleanName(attribute) + firstToUpper(attribute.getType().replaceAll("[^a-zA-Z0-9]", ""));
         }
 
         XsdAbstractElement elem = attribute;
 
         while (elem != null){
             if (elem instanceof XsdElement){
-                return enumPrefix + getCleanName(attribute) + toCamelCase(((XsdElement) elem).getName());
+                return enumPrefix + getCleanName(attribute) + firstToUpper(((XsdElement) elem).getName());
             }
 
             elem = elem.getParent();
