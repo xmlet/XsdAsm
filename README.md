@@ -7,14 +7,17 @@
 # XsdAsm
 
 <div align="justify"> 
-    XsdAsm is a library dedicated to generate a fluent java API based on a XSD file. It uses 
-    <a href="https://github.com/xmlet/XsdParser">XsdParser</a> library to parse the xsd file into a list of java elements 
+    XsdAsm is a library dedicated to generate a fluent java DSL based on a XSD file. It uses 
+    <a href="https://github.com/xmlet/XsdParser">XsdParser</a> library to parse the XSD file into a list of Java classes 
     that XsdAsm will use in order to obtain the information needed to generate the correspondent classes. In order to 
-    generate classes this library also uses the ASM library,  which is a library that provides a java interface to 
-    bytecode manipulation, which allows for the creation of classes, methods, etc.
+    generate classes this library uses the <a href="http://asm.ow2.org/">ASM library</a>,  which is a library that provides a Java interface to perform 
+    bytecode manipulation, which allows for the creation of classes, methods, etc. 
     <br />
     <br />
-    More information at <a href="http://asm.ow2.org/">ASM Website</a>.
+    This library main objective is to generate a fluent Java DSL based on an existing XSD DSL. It aims 
+    to verify the largest number of the restrictions defined in the XSD DSL. It uses the Java compiler to perform most 
+    validations and in some cases where such isn't possible it performs run time validations, throwing exceptions 
+    if the rules of the used language are violated.
 </div>
 
 ## Installation
@@ -29,18 +32,16 @@
 <dependency>
     <groupId>com.github.xmlet</groupId>
     <artifactId>xsdAsm</artifactId>
-    <version>1.0.9</version>
+    <version>1.0.14</version>
 </dependency>
 ``` 
 
 ## How does XsdAsm works?
 
 <div align="justify"> 
-    In order to provide a better understanding of this library we need a quick information about XSD language. XSD files 
-    are based in two different type of values, elements and attributes. How those two different values work? Elements 
-    are the more complex value type, they can have attributes and contain other elements. Attributes on the other hand 
-    are defined by a type and a value, which can have restrictions. With that in mind XsdAsm created a base infrastructure 
-    that supports every generated API as shown below:
+    The XSD language uses two main types of values: elements and attributes. Elements are complex value types, they can 
+    have attributes and contain other elements. Attributes are defined by a type and a value, which can have restrictions. 
+    With that in mind XsdAsm created a common set of classes that supports every generated DSL as shown below:
     <br />
     <br />
 </div>
@@ -49,19 +50,20 @@
 </p>
 <div align="justify"> 
     <br />
-    The <i>Attribute</i> and <i>Element</i> interfaces serve as a base to all attributes and elements that will be present in any 
-    given API, with <i>AbstractElement</i> as an abstract class from which the concrete elements will derive. This abstract 
+    The <i>Attribute</i> and <i>Element</i> interfaces serve as a base to all attribute and element classes that will be generated in any 
+    generated DSL, with <i>AbstractElement</i> as an abstract class from which the concrete element classes will derive. This abstract 
     class contains a list of attributes and elements present in the concrete element and other shared features from elements.
-    <i>BaseAttribute</i> serves as a base to every Attribute that validates their restrictions.
-    In the diagram the <i>Html</i> and <i>AttrManifestString</i> classes are shown as concrete implementations of <i>AbstractElement</i> and <i>BaseAttribute</i>.
+    <i>BaseAttribute</i> serves as a base to every <i>Attribute</i> that validates their restrictions.
+    In the diagram the <i>Html</i> and <i>AttrManifestString</i> classes are shown as concrete implementations of 
+    <i>AbstractElement</i> and <i>BaseAttribute</i>, respectively.
 </div>
 
 ### Concrete Usage
 
 <div align="justify"> 
-    XsdAsm provides a <i>XsdAsmMain</i> class that receives two arguments, the first one being the xsd file path and the second 
-    the name of the API to be generated. All the generated APIs are placed in the same base package, <i>org.xmlet</i>, 
-    the difference being the chosen API name, for example, if the api name is <i>htmlapi</i>, the resulting package name 
+    XsdAsm provides a <i>XsdAsmMain</i> class that receives two arguments, the first one being the XSD file path and the second 
+    one is the name of the DSL to be generated. All the generated DSLs are placed in the same base package, <i>org.xmlet</i>, 
+    the difference being the chosen DSL name, for example, if the DSL name is <i>htmlapi</i>, the resulting package name 
     is <i>org.xmlet.htmlapi</i>.
     <br />
     <br />
@@ -78,14 +80,14 @@ public class Example{
 <div align="justify"> 
     The generated classes will be written in the target folder of the invoking project. For example, the 
     <a href="https://github.com/xmlet/HtmlApi/blob/master/create_class_binaries.bat">HtmlApi</a> project 
-    invokes the <i>XsdAsmMain</i>, generating all the HmlApi needed classes and writes them in the HtmlApi target folder, this 
+    invokes the <i>XsdAsmMain</i>, generating all the HmlApi classes and writing them in the HtmlApi target folder, this 
     way when HtmlApi is used as a dependency those classes appear as normal classes as if they were manually created.
 </div>
 
 ### Examples
 
 <div align="justify"> 
-    Using the <i>Html</i> element from the HTML5 specification a simple example will be explained, which can be extrapolated to 
+    Using the <i>Html</i> element from the HTML5 specification a simple example will be presented, which can be extrapolated to 
     other elements. Some simplification will be made in this example for easier understanding.
     <br />
     <br />
@@ -108,9 +110,12 @@ public class Example{
     With this example in mind what classes will need to be generated?
     <br />
     <br />
-    <b>Html Element</b> - A class that represents the <i>Html</i> element, deriving from <i>AbstractElement</i>.  <br />
-    <b>Body and Head Methods</b> - Both methods present in the <i>Html</i> class that add <i>Body</i> and <i>Head</i> instances to <i>Html</i> children. <br />  
-    <b>Manifest Method</b> - A method present in <i>Html</i> class that adds an instance of the <i>Manifest</i> attribute to the <i>Html</i> attribute list.
+    <i>Html Class</i> - A class that represents the <i>Html</i> element, represented in XSD by the <i>xs:element name="html"</i>, deriving from <i>AbstractElement</i>.  <br />
+    <i>body and head Methods</i> - Both methods present in the <i>Html</i> class that add <i>Body</i> and <i>Head</i> instances to <i>Html</i> children. This methods are created 
+                                    due to their presence in the <i>xs:choice</i> XSD element. <br />  
+    <i>attrManifest Method</i> - A method present in <i>Html</i> class that adds an instance of the <i>AttrManifestString</i> attribute to the <i>Html</i> attribute list. This 
+                                    method is created because the XSD <i>html</i> element contains a <i>xs:attribute name="manifest"</i> with a <i>xsd:anyURI</i> type, which maps
+                                    to <i>String</i> in Java. 
     <br />
     <br />
 </div>  
@@ -120,7 +125,7 @@ public class Html extends AbstractElement implements CommonAttributeGroup {
     public Html() { }
     
     public Html attrManifest(String attrManifest) {
-        this.addAttr(new AttrManifest(attrManifest));
+        this.addAttr(new AttrManifestString(attrManifest));
     }
     
     public Body body() {
@@ -134,38 +139,39 @@ public class Html extends AbstractElement implements CommonAttributeGroup {
 ```
 
 <div align="justify"> 
-    <b>Body and Head classes</b> - Classes for both <i>Body</i> and <i>Head</i> elements.
-    <br />
-    <br />
-</div> 
-
-``` java
-public class Body extends AbstractElement {
-    (...)
-}
-```
-
-``` java
-public class Head extends AbstractElement {
-    (...)
-}
-```
-<div align="justify"> 
-    <b>Manifest Attribute</b> - A class that represents the <i>Manifest</i> attribute, deriving from <i>BaseAttribute</i>.
+    <i>Body and Head classes</i> - Classes for both <i>Body</i> and <i>Head</i> elements, created based on their respective XSD <i>xsd:element</i>.
     <br />
     <br />
 </div> 
 
 ```java
-public class AttrManifest extends BaseAttribute<String> {
-   public AttrManifest(String attrValue) {
+public class Body extends AbstractElement {
+    // Contents based on the respective xsd:element name="body"
+}
+```
+
+```java
+public class Head extends AbstractElement {
+    // Contents based on the respective xsd:element name="head"
+}
+```
+<div align="justify"> 
+    <i>AttrManifestString Attribute</i> - A class that represents the <i>Manifest</i> attribute, deriving from <i>BaseAttribute</i>. Its type is 
+                                        <i>String</i> because the XSD type <i>xsd:anyURI</i> maps to the type <i>String</i> in Java.
+    <br />
+    <br />
+</div> 
+
+```java
+public class AttrManifestString extends BaseAttribute<String> {
+   public AttrManifestString(String attrValue) {
       super(attrValue);
    }
 }
 ```
 
 <div align="justify"> 
-    <b>CommonAttributeGroup Interface</b> - An interface with default methods that add the group attributes to the concrete element.
+    <i>CommonAttributeGroup Interface</i> - An interface with default methods that add the group attributes to the element which implements this interface.
     <br />
     <br />
 </div> 
@@ -173,7 +179,8 @@ public class AttrManifest extends BaseAttribute<String> {
 ```java
 public interface CommonAttributeGroup extends Element {
 
-   //Assuming CommonAttribute is an attribute group with a single attribute named SomeAttribute with the type String.
+   //Assuming CommonAttribute is an attribute group with a single 
+   //attribute named SomeAttribute with the type String.
    default Html attrSomeAttribute(String attributeValue) {
       this.addAttr(new SomeAttribute(attributeValue));
       return this;
@@ -181,14 +188,51 @@ public interface CommonAttributeGroup extends Element {
 }
 ```
 
+### Type Arguments
+
+<div align="justify">
+    As we've stated previously, the DSLs generated by this project aim to guarantee the validation of the set of rules associated
+    with the language. To achieve this we heavily rely on Java types, as shown above, i.e. the <i>Html</i> class can only 
+    contain <i>Body</i> and <i>Head</i> instances as children and attributes such as <i>AttrManifest</i> or any attribute 
+    belonging to <i>CommonAttributeGroup</i>. This solves our problem, but since we are using a fluent approach to the generated
+    DSLs another important aspect is to always mantain type information. To guarantee this we use type parameters, also known
+    as generics.
+    <br />
+    <br />
+</div>
+
+```java
+class Example{
+    void example(){
+        Html<Element> html = new Html<>();
+        Body<Html<Element>> body = html.body();
+        
+        P<Header<Body<Html<Element>>>> p1 = body.header().p();
+        P<Div<Body<Html<Element>>>> p2 = body.div().p();
+        
+        Header<Body<Html<Element>>> header = p1.__();
+        Div<Body<Html<Element>>> div = p2.__();
+    }        
+}
+```
+
+<div align="justify">
+    In this example we can see how the type information is mantained. When each element is created it receives the parent
+    type information, which allows to keep the type information even when we navigate to the parent of the current element.
+    A good example of this are both <i>P</i> element instances, <i>p1</i> and <i>p2</i>. Both share their type, but each 
+    one of them have diferent parent information, <i>p1</i> is a child of an <i>Header</i> instance, while <i>p2</i> is
+    a child of a <i>Div</i> instance. When the method that navigates to the parent element is called, the <i>__()</i> method,
+    each one returns its respective parent, with the correct type.
+</div>
+
 ### Restriction Validation
 
 <div align="justify"> 
-    In the description of any given xsd file there are many restrictions in the way the elements are contained in each 
+    In the description of any given XSD file there are many restrictions in the way the elements are contained in each 
     other and which attributes are allowed. Reflecting those same restrictions to the Java language we have two ways of 
     ensure those same restrictions, either at runtime or in compile time. This library tries to validate most of the 
     restrictions in compile time, as shown in the example above. But in some restrictions it isn't possible to validate 
-    in compile time, examples of this is the following restriction:
+    in compile time, an example of this is the following restriction:
     <br />
     <br />
 </div>
@@ -212,7 +256,7 @@ public interface CommonAttributeGroup extends Element {
 ```
 
 <div align="justify"> 
-    In this example we have an element that has an attribute called valueList. This attribute has some restrictions, it 
+    In this example we have an element that has an attribute called <i>valueList</i>. This attribute has some restrictions, it 
     is represented by a <i>xsd:list</i> and its element count should be between 1 and 5. Transporting this example to the Java 
     language it will result in the following class:
     <br />
@@ -220,28 +264,37 @@ public interface CommonAttributeGroup extends Element {
 </div>
 
 ```java
-public class AttrIntList extends BaseAttribute<List> {
-   public AttrManifest(List<Integer> list) {
-      super(list);
+public class AttrIntList extends BaseAttribute<List<Integer>> {
+   public AttrIntList(List<Integer> attrValue) {
+      super(attrValue, "intList");
    }
 }
 ```
 
 <div align="justify"> 
-    But with this solution the <i>xsd:maxLength</i> and <i>xsd:minLength</i> are ignored. To solve this problem the existing 
-    restrictions existing in any given attribute are hardcoded in the class static constructor, which stores the 
-    restrictions in a Map object. This way, whenever an instance is created a validation function is called
-    in the <i>BaseAttribute</i> constructor and will throw an exception if any restriction present in the Map is violated.
-    This way the generated API ensures that any sucessful usage follows the rules previously defined.
+    But with this solution the <i>xsd:maxLength</i> and <i>xsd:minLength</i> restrictions are ignored. To solve this problem the 
+    existing restrictions of any given attribute are hardcoded in the class constructor. This will result in method calls 
+    to validation methods, which verify the attribute restrictions whenever an instance is created. If the instances fails
+    any validation the result is an exception thrown by the validation methods.
 </div>
+
+```java
+public class AttrIntList extends BaseAttribute<List<Integer>> {
+   public AttrIntList(List<Integer> attrValue) {
+      super(attrValue, "intList");
+      RestrictionValidator.validateMaxLength(5, attrValue);
+      RestrictionValidator.validateMinLength(1, attrValue);
+   }
+}
+```
 
 #### Enumerations
 
 <div align="justify"> 
     In regard to the restrictions there is a special restriction that can be enforced at compile time, the <i>xsd:enumeration</i>. 
-    In order to obtain that validation at compile time the XsdAsm library generates Enum classes that contain all the 
+    In order to obtain that validation at compile time the XsdAsm library generates <i>Enum</i> classes that contain all the 
     values indicated in the <i>xsd:enumeration</i> tags. In the following example we have an attribute with three possible 
-    values, command, checkbox and radio. 
+    values: command, checkbox and radio. 
     <br />
     <br />
 </div>
@@ -259,8 +312,9 @@ public class AttrIntList extends BaseAttribute<List> {
 ```
 
 <div align="justify"> 
-    This results in the creation of an Enum, <i>EnumTypeCommand</i>, as shown and the attribute will then receive an instance 
-    of <i>EnumTypeCommand</i>, ensuring only allowed values are used.
+    This results in the creation of an <i>Enum</i>, <i>EnumTypeCommand</i>, as shown below. This means that any attribute that uses 
+    this type will receive an instance of <i>EnumTypeCommand</i> instead of receiving a <i>String</i>. This guarantees at 
+    compile time that only the allowed set of values are passed to the respective attribute.
     <br />
     <br />
 </div>
@@ -284,24 +338,50 @@ public class AttrTypeEnumTypeCommand extends BaseAttribute<String> {
 ### Visitors
 
 <div align="justify"> 
-    This library also uses the Visitor pattern. Using this pattern allows different uses for the same API, given that 
-    different Visitors are implemented. In the generation of the API two classes are created:
+    This library also uses the Visitor pattern. Using this pattern allows different uses for the same DSL, given that 
+    different Visitors are implemented. Each generated DSL will have one <i>ElementVisitor</i>, this class is 
+    an abstract class which contains four main <i>visit</i> methods:
     <br />
     <br />
-    <b>ElementVisitor</b> - A interface that contains visit methods for every element present in the generated API. <br />
-    <b>AbstractElementVisitor</b> - An abstract class that reroutes all visit method calls to a single one, which 
-    allows the concrete Visitor implementation to only override that single visit method or if needed override only the 
-    methods with a different implementation.
+    <ul>
+        <li>
+            <i>sharedVisit(Element<T, ?> element)</i> - This method is called whenever a class generated based on a XSD <i>xsd:element</i> has its
+            <i>accept</i> method called. By receiving the <i>Element</i> we have access to the element children and attributes.
+        </li>
+        <li>
+            <i>visit(Text text)</i> - This method is called when the <i>accept</i> method of the special <i>Text</i> element is invoked.
+        </li>
+        <li>
+            <i>visit(Comment comment)</i> - This method is called when the <i>accept</i> method of the special <i>Comment</i> element is invoked.
+        </li>
+        <li>
+            <i>visit(TextFuction<R, U, ?> textFunction)</i> - This method is called when the <i>accept</i> method of the special 
+                                                        <i>TextFunction</i> element is invoked.
+        </li>
+    </ul>
     <br />
     <br />
-    An example of a concrete visitor can be a visitor that writes indented HTML based on the elements received.
+    Apart from this four methods we have create specific methods for each element class created, e.g. the <i>Html</i> class.
+    This introduces a greater level of control, since the concrete <i>ElementVisitor</i> implementation can manipulate 
+    each <i>visit</i> method in a different way. These specific methods invoke the <i>sharedVisit</i> as their default behaviour, 
+    as shown below.
 </div>
+
+```java
+public class ElementVisitor {
+    // (...)
+    
+    default void visit(Html html) {
+        this.sharedVisit(html);
+    }
+}
+```
 
 ### Element Binding
 
 <div align="justify">  
-    In order to support repetitive tasks over an element binders were implemented. This allows for users to define, 
-    for example, templates for a given element. An example is presented below, it uses the Html5 API as example.
+    To support the definition of reusable templates the <i>Element</i> and <i>AbstractElement</i> classes were changed to support binders. 
+    This allows programmers to postpone the addition of information to the defined element tree. An example is shown below.
     <br />
     <br />
 </div>
@@ -309,27 +389,32 @@ public class AttrTypeEnumTypeCommand extends BaseAttribute<String> {
 ```java
 public class BinderExample{
     public void bindExample(){
-        Html<Html> root = new Html<>();
-        Body<Html<Html>> body = root.body();
-        
-        Table<Body<Html<Html>>> table = body.table();
-        table.tr().th().text("Title");
-        table.<List<String>>binder((elem, list) ->
+        Html<Element> root = new Html<>()
+            .body()
+                .table()
+                    .tr()
+                        .th()
+                            .text("Title")
+                        .__()
+                    .__()
+                    .<List<String>>binder((elem, list) ->
                         list.forEach(tdValue ->
                             elem.tr().td().text(tdValue)
                         )
-                    );
-        
-        //Keep adding elements to the body of the document.
+                    )
+                .__()
+            .__()
+        .__();
     }
-}
+ }
 ```
 
 <div align="justify"> 
-    In this example a table is created, and a title is added in the first row as a title header. In regard to the values 
-    present in the table instead of having them inserted right away it is possible delay that insertion by indicating 
-    what will the element do when the information is received. This way a template can be defined and reused with 
-    different values. A full example of how this works is available at the method <a href="https://github.com/xmlet/HtmlApiTest/blob/master/src/test/java/org/xmlet/htmlapitest/HtmlApiTest.java">testBinderUsage</a>.
+    In this example a <i>Table</i> instance is created, and a <i>Title</i> is added in the first row as a title header, i.e. <i>th</i>. 
+    After defining the table header of the table we can see that we invoke a <i>binder</i> method. This method bounds the <i>Table</i>
+    instance with a function, which defines the behaviour to be performed when this instance receives the information.
+    This way a template can be defined and reused with different values. A full example of how this works is available at 
+    the method <a href="https://github.com/xmlet/HtmlApiTest/blob/master/src/test/java/org/xmlet/htmlapitest/HtmlApiTest.java">testBinderUsage</a>.
 </div>
 
 ## Code Quality
